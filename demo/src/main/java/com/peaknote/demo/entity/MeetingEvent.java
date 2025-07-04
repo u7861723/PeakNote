@@ -20,6 +20,10 @@ public class MeetingEvent {
     private String joinUrl;
     private String meetingId;
     private Instant lastNotifiedAt;
+    @Column(name = "transcript_status")
+    private String transcriptStatus = "none"; // 默认 none
+
+    
     public String getEventId() {
         return eventId;
     }
@@ -73,6 +77,12 @@ public class MeetingEvent {
     }
     public void setMeetingId(String meetingId) {
         this.meetingId = meetingId;
+    }
+    public String getTranscriptStatus() {
+        return transcriptStatus;
+    }
+    public void setTranscriptStatus(String transcriptStatus) {
+        this.transcriptStatus = transcriptStatus;
     }
 
 }

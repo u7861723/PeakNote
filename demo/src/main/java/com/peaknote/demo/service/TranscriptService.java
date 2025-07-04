@@ -1,44 +1,47 @@
 package com.peaknote.demo.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import com.microsoft.graph.requests.GraphServiceClient;
 import okhttp3.Request;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import com.microsoft.graph.requests.GraphServiceClient;
+import com.peaknote.demo.entity.MeetingEvent;
+import com.peaknote.demo.entity.MeetingTranscript;
+import com.peaknote.demo.repository.MeetingEventRepository;
+import com.peaknote.demo.repository.MeetingTranscriptRepository;
 
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.net.URI;
-import org.slf4j.Logger;
-
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-
+import java.time.Instant;
 
 @Service
 public class TranscriptService {
 
-    private final GraphServiceClient<Request> graphClient;
     private static final Logger log = LoggerFactory.getLogger(TranscriptService.class);
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final GraphServiceClient<Request> graphClient;
+    private final MeetingEventRepository meetingEventRepository;
+    private final MeetingTranscriptRepository meetingTranscriptRepository;
 
-    public TranscriptService(@Qualifier("graphClient") GraphServiceClient<Request> graphClient) {
+    public TranscriptService(@Qualifier("graphClient") GraphServiceClient<Request> graphClient,
+                             MeetingEventRepository meetingEventRepository,
+                             MeetingTranscriptRepository meetingTranscriptRepository) {
         this.graphClient = graphClient;
+        this.meetingEventRepository = meetingEventRepository;
+        this.meetingTranscriptRepository = meetingTranscriptRepository;
     }
-
- /**
+    /**
      * 下载 transcript 内容
      *
-     * @param userId       Teams 用户 ID（即 organizer 的 objectId）
-     * @param meetingId    在线会议 ID（从 webhook payload 里解析出来）
-     * @param transcriptId transcript 的 ID（从 webhook payload 里解析出来）
-     * @param accessToken  你刚刚拿到的 token
-     * @return transcript 文件内容（例如 VTT 格式）
+     * @param userId       用户 ID
+     * @param meetingId    会议 ID
+     * @param transcriptId transcript ID
+     * @param accessToken  token
+     * @return transcript 内容
      */
-    public String downloadTranscriptContent(String userId, String meetingId, String transcriptId, String accessToken) {
+    public void downloadTranscriptContent(String userId, String meetingId, String transcriptId, String accessToken) {
         try {
             String url = "https://graph.microsoft.com/beta/users/" + userId
                     + "/onlineMeetings/" + meetingId
@@ -55,69 +58,37 @@ public class TranscriptService {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() == 200) {
-                System.out.println("✅ 成功获取 transcript 内容！");
-                return response.body();
+                String content = response.body();
+                log.info("✅ 成功获取 transcript 内容，准备保存数据库");
+                System.out.println(content);
+
+                // 根据 eventId 查找 MeetingEvent
+                MeetingEvent meetingEvent = meetingEventRepository.findByMeetingIdAndTranscriptStatus(meetingId, "subscribed");
+                if (meetingEvent == null) {
+                    log.error("❌ 未找到对应会议事件，eventId={}", meetingId);
+                    return;
+                }
+                String eventId = meetingEvent.getEventId();
+
+                // 创建并保存 MeetingTranscript
+                MeetingTranscript transcript = new MeetingTranscript();
+                transcript.setMeetingEvent(meetingEvent);
+                transcript.setContentText(content);
+                transcript.setCreatedAt(Instant.now());
+                meetingTranscriptRepository.save(transcript);
+                log.info("✅ 已保存 transcript 到数据库，eventId={}, transcriptId={}", eventId, transcript.getId());
+
+                // ✅ 更新事件状态为 saved
+                meetingEvent.setTranscriptStatus("saved");
+                meetingEventRepository.save(meetingEvent);
+                log.info("✅ 已更新事件 {} 状态为 saved", eventId);
             } else {
-                System.err.println("❌ 下载 transcript 失败，状态码: " + response.statusCode());
-                System.err.println("响应内容: " + response.body());
-                return null;
+                log.error("❌ 下载 transcript 失败，状态码: {}, 内容: {}", response.statusCode(), response.body());
+                return;
             }
         } catch (Exception e) {
-            System.err.println("❌ 下载 transcript 出错: " + e.getMessage());
-            e.printStackTrace();
-            return null;
+            log.error("❌ 下载 transcript 出错: {}", e.getMessage(), e);
+            return;
         }
     }
-
-    /**
-     * 从 payload 中提取 userId, meetingId, transcriptId
-     */
-    public TranscriptInfo parseIds(String payload) {
-        try {
-            JsonNode root = objectMapper.readTree(payload);
-            JsonNode valueNode = root.get("value").get(0);
-            String resource = valueNode.get("resource").asText();
-
-            // resource 示例：
-            // users('userId')/onlineMeetings('meetingId')/transcripts('transcriptId')
-            String cleaned = resource.replace("users('", "")
-                                     .replace("')/onlineMeetings('", ",")
-                                     .replace("')/transcripts('", ",")
-                                     .replace("')", "");
-
-            String[] parts = cleaned.split(",");
-
-            if (parts.length == 3) {
-                String userId = parts[0];
-                String meetingId = parts[1];
-                String transcriptId = parts[2];
-                log.info("✅ 解析出 userId: {}, meetingId: {}, transcriptId: {}", userId, meetingId, transcriptId);
-                return new TranscriptInfo(userId, meetingId, transcriptId);
-            } else {
-                log.error("❌ 解析 resource 失败，结果: {}", cleaned);
-                return null;
-            }
-
-        } catch (Exception e) {
-            log.error("❌ 解析 payload 出错: {}", e.getMessage(), e);
-            return null;
-        }
-    }
-
-    /**
-     * 用于封装返回的 id 信息
-     */
-    public static class TranscriptInfo {
-        public String userId;
-        public String meetingId;
-        public String transcriptId;
-
-        public TranscriptInfo(String userId, String meetingId, String transcriptId) {
-            this.userId = userId;
-            this.meetingId = meetingId;
-            this.transcriptId = transcriptId;
-        }
-    }
-
-
 }

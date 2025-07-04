@@ -1,17 +1,12 @@
 package com.peaknote.demo.service;
 
 import com.microsoft.graph.models.Subscription;
-import com.microsoft.graph.requests.GraphServiceClient;
 import com.microsoft.graph.requests.SubscriptionCollectionPage;
 import com.peaknote.demo.entity.TeamsUser;
 import com.peaknote.demo.repository.UserRepository;
-
-import okhttp3.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -21,11 +16,12 @@ public class SubscriptionService {
 
     private static final Logger log = LoggerFactory.getLogger(SubscriptionService.class);
 
-    private final GraphServiceClient<Request> graphClient;
+    private final GraphService graphService;;
     private final UserRepository userRepository;
 
-    public SubscriptionService(@Qualifier("webhookGraphClient")GraphServiceClient<Request> graphClient, UserRepository userRepository) {
-        this.graphClient = graphClient;
+
+    public SubscriptionService(GraphService graphService, UserRepository userRepository) {
+        this.graphService = graphService;
         this.userRepository = userRepository;
     }
 
@@ -36,8 +32,7 @@ public class SubscriptionService {
         try {
             List<TeamsUser> userIds = userRepository.findAll(); // 这里需你自己实现获取租户内用户 ID 列表
             for (TeamsUser user : userIds) {
-                String userId = user.getOid();
-                createEventSubscription(userId);
+                createEventSubscription(user.getOid());
             }
         } catch (Exception e) {
             log.error("❌ 创建订阅失败: {}", e.getMessage(), e);
@@ -49,48 +44,36 @@ public class SubscriptionService {
      */
     public void createEventSubscription(String userId) {
         try {
-            Subscription subscription = new Subscription();
             // subscription.changeType = "created,updated,deleted";
-            subscription.changeType = "created";
-            subscription.notificationUrl = "https://2c12-123-51-17-200.ngrok-free.app/webhook/notification";
-            subscription.resource = "/users/" + userId + "/events";
-            subscription.expirationDateTime = OffsetDateTime.now().plusHours(2); // 最多可设置 4230 分钟
-            subscription.clientState = "yourCustomState"; // 可随意设置用于验证
+            String notificationUrl = "https://957b-123-51-17-200.ngrok-free.app/webhook/notification";
+            OffsetDateTime expireTime = OffsetDateTime.now().plusHours(2);
+            String clientState = "yourCustomState";
+            Subscription created = graphService.createEventSubscription(userId, notificationUrl, clientState, expireTime);
 
-            Subscription createdSubscription = graphClient.subscriptions()
-                    .buildRequest()
-                    .post(subscription);
-
-            log.info("✅ 成功为用户 {} 创建订阅: {}", userId, createdSubscription.id);
+            log.info("✅ 成功为用户 {} 创建订阅: {}", userId, created.id);
         } catch (Exception e) {
             log.error("❌ 用户 {} 创建订阅失败: {}", userId, e.getMessage(), e);
         }
     }
 
-     /**
-     * 查看并删除所有现有订阅
+
+    /**
+     * 列出并删除所有现有订阅
      */
     public void listAndDeleteAllSubscriptions() {
         try {
-            // 获取所有订阅
-            SubscriptionCollectionPage subscriptions = graphClient.subscriptions()
-                    .buildRequest()
-                    .get();
+            SubscriptionCollectionPage subscriptions = graphService.listAllSubscriptions();
 
             if (subscriptions.getCurrentPage().isEmpty()) {
                 log.info("✅ 当前没有任何订阅");
                 return;
             }
 
-            // 遍历并删除
             for (Subscription sub : subscriptions.getCurrentPage()) {
-                log.info("➡️ 找到订阅: ID={}, Resource={}, Expires={}", 
+                log.info("➡️ 准备删除订阅: ID={}, Resource={}, Expires={}",
                         sub.id, sub.resource, sub.expirationDateTime);
 
-                // 删除该订阅
-                graphClient.subscriptions(sub.id)
-                        .buildRequest()
-                        .delete();
+                graphService.deleteSubscription(sub.id);
                 log.info("🗑️ 已删除订阅: {}", sub.id);
             }
 
@@ -106,9 +89,7 @@ public class SubscriptionService {
      */
     public void listAllSubscriptions() {
         try {
-            SubscriptionCollectionPage subscriptions = graphClient.subscriptions()
-                    .buildRequest()
-                    .get();
+            SubscriptionCollectionPage subscriptions = graphService.listAllSubscriptions();
 
             if (subscriptions.getCurrentPage().isEmpty()) {
                 log.info("✅ 当前没有任何订阅");
@@ -128,21 +109,15 @@ public class SubscriptionService {
     //添加对transcript的订阅
     public void createTranscriptSubscription(String meetingId) {
         try {
-            Subscription subscription = new Subscription();
-            subscription.changeType = "created";
-            subscription.notificationUrl = "https://2c12-123-51-17-200.ngrok-free.app/webhook/teams-transcript";
-            subscription.resource = "/communications/onlineMeetings/" + meetingId + "/transcripts";;
-            subscription.expirationDateTime = OffsetDateTime.now().plusHours(1); // 最多支持 1 天，先设置 1 小时测试
-            subscription.clientState = UUID.randomUUID().toString(); // 可用于校验回调
+            OffsetDateTime expireTime = OffsetDateTime.now().plusHours(1);
+            String clientState = UUID.randomUUID().toString();
+            String notificationUrl = "https://957b-123-51-17-200.ngrok-free.app/webhook/teams-transcript"; // ✅ 修改成你自己的回调地址
 
-            Subscription createdSub = graphClient.subscriptions()
-                    .buildRequest()
-                    .post(subscription);
+            Subscription created = graphService.createTranscriptSubscription(meetingId, notificationUrl, clientState, expireTime);
 
-            System.out.println("✅ 订阅成功，ID: " + createdSub.id + ", Expire: " + createdSub.expirationDateTime);
+            log.info("✅ 为会议 {} 创建 transcript 订阅成功，订阅 ID: {}", meetingId, created.id);
         } catch (Exception e) {
-            System.err.println("❌ 创建订阅失败: " + e.getMessage());
-            e.printStackTrace();
+            log.error("❌ 会议 {} 创建 transcript 订阅失败: {}", meetingId, e.getMessage(), e);
         }
     }
 }

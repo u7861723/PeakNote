@@ -12,7 +12,7 @@ public class MeetingTranscript {
     private UUID id;
 
     @ManyToOne
-    @JoinColumn(name = "meeting_instance_event_id")
+    @JoinColumn(name = "meeting_event_event_id")
     private MeetingEvent meetingEvent;
 
     @Lob

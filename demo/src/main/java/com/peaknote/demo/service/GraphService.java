@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import com.microsoft.graph.models.Event;
+import com.microsoft.graph.models.Subscription;
 import com.microsoft.graph.models.User;
 import com.microsoft.graph.options.QueryOption;
 
@@ -12,7 +13,9 @@ import okhttp3.Request;
 import com.microsoft.graph.requests.EventCollectionPage;
 import com.microsoft.graph.requests.GraphServiceClient;
 import com.microsoft.graph.requests.OnlineMeetingCollectionPage;
+import com.microsoft.graph.requests.SubscriptionCollectionPage;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -80,6 +83,52 @@ public class GraphService {
                         new QueryOption("endDateTime", endDateTime)
                 ))
                 .get();
+    }
+
+        //创建对Event的订阅
+        public Subscription createEventSubscription(String userId, String notificationUrl, String clientState, OffsetDateTime expireTime) {
+        Subscription subscription = new Subscription();
+        subscription.changeType = "created";
+        subscription.notificationUrl = notificationUrl;
+        subscription.resource = "/users/" + userId + "/events";
+        subscription.expirationDateTime = expireTime;
+        subscription.clientState = clientState;
+
+        return webhookGraphClient.subscriptions()
+                .buildRequest()
+                .post(subscription);
+    }
+
+    //创建对Transcript的订阅
+    public Subscription createTranscriptSubscription(String meetingId, String notificationUrl, String clientState, OffsetDateTime expireTime) {
+        Subscription subscription = new Subscription();
+        subscription.changeType = "created";
+        subscription.notificationUrl = notificationUrl;
+        subscription.resource = "/communications/onlineMeetings/" + meetingId + "/transcripts";
+        subscription.expirationDateTime = expireTime;
+        subscription.clientState = clientState;
+
+        return webhookGraphClient.subscriptions()
+                .buildRequest()
+                .post(subscription);
+    }
+
+        /**
+     * 列出所有订阅
+     */
+    public SubscriptionCollectionPage listAllSubscriptions() {
+        return webhookGraphClient.subscriptions()
+                .buildRequest()
+                .get();
+    }
+
+    /**
+     * 删除指定订阅
+     */
+    public void deleteSubscription(String subscriptionId) {
+        webhookGraphClient.subscriptions(subscriptionId)
+                .buildRequest()
+                .delete();
     }
 }
 
