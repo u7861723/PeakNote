@@ -45,7 +45,7 @@ public class SubscriptionService {
     public void createEventSubscription(String userId) {
         try {
             // subscription.changeType = "created,updated,deleted";
-            String notificationUrl = "https://957b-123-51-17-200.ngrok-free.app/webhook/notification";
+            String notificationUrl = "https://c9fd-123-51-17-200.ngrok-free.app/webhook/notification";
             OffsetDateTime expireTime = OffsetDateTime.now().plusHours(2);
             String clientState = "yourCustomState";
             Subscription created = graphService.createEventSubscription(userId, notificationUrl, clientState, expireTime);
@@ -109,9 +109,9 @@ public class SubscriptionService {
     //添加对transcript的订阅
     public void createTranscriptSubscription(String meetingId) {
         try {
-            OffsetDateTime expireTime = OffsetDateTime.now().plusHours(1);
+            OffsetDateTime expireTime = OffsetDateTime.now().plusHours(8);
             String clientState = UUID.randomUUID().toString();
-            String notificationUrl = "https://957b-123-51-17-200.ngrok-free.app/webhook/teams-transcript"; // ✅ 修改成你自己的回调地址
+            String notificationUrl = "https://c9fd-123-51-17-200.ngrok-free.app/webhook/teams-transcript"; // ✅ 修改成你自己的回调地址
 
             Subscription created = graphService.createTranscriptSubscription(meetingId, notificationUrl, clientState, expireTime);
 

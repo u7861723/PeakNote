@@ -26,7 +26,7 @@ public class MeetingEventSchedulerService {
     /**
      * 每 5 分钟执行一次
      */
-    @Scheduled(cron = "0 0/5 * * * ?")
+    @Scheduled(cron = "0 0/1 * * * ?")
     public void subscribeRecentMeetings() {
         OffsetDateTime now = OffsetDateTime.now();
         OffsetDateTime fiveMinutesAgo = now.minusMinutes(5);

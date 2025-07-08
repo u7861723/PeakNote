@@ -3,6 +3,7 @@ package com.peaknote.demo.service;
 import okhttp3.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import com.microsoft.graph.requests.GraphServiceClient;
@@ -19,6 +20,9 @@ import java.time.Instant;
 
 @Service
 public class TranscriptService {
+
+    @Autowired
+    MeetingSummaryService meetingSummaryService;
 
     private static final Logger log = LoggerFactory.getLogger(TranscriptService.class);
     private final GraphServiceClient<Request> graphClient;
@@ -61,7 +65,8 @@ public class TranscriptService {
                 String content = response.body();
                 log.info("✅ 成功获取 transcript 内容，准备保存数据库");
                 System.out.println(content);
-
+                String summary = meetingSummaryService.generateSummary(content);
+                System.out.println(summary);
                 // 根据 eventId 查找 MeetingEvent
                 MeetingEvent meetingEvent = meetingEventRepository.findByMeetingIdAndTranscriptStatus(meetingId, "subscribed");
                 if (meetingEvent == null) {
@@ -73,7 +78,7 @@ public class TranscriptService {
                 // 创建并保存 MeetingTranscript
                 MeetingTranscript transcript = new MeetingTranscript();
                 transcript.setMeetingEvent(meetingEvent);
-                transcript.setContentText(content);
+                transcript.setContentText(summary);
                 transcript.setCreatedAt(Instant.now());
                 meetingTranscriptRepository.save(transcript);
                 log.info("✅ 已保存 transcript 到数据库，eventId={}, transcriptId={}", eventId, transcript.getId());

@@ -13,7 +13,7 @@ import java.time.OffsetDateTime;
 
 @Service
 public class GraphEventService {
-
+    
     private final GraphService graphService;
     private final MeetingEventRepository repository;
 
@@ -35,7 +35,7 @@ public class GraphEventService {
 
     public void addSeriesInstances(String userId, String seriesMasterId) {
         String startDateTime = OffsetDateTime.now().toString();
-        String endDateTime = OffsetDateTime.now().plusMonths(2).toString();
+        String endDateTime = OffsetDateTime.now().plusMonths(6).toString();
 
         EventCollectionPage occurrences = graphService.getEventOccurrences(userId, seriesMasterId, startDateTime, endDateTime);
 

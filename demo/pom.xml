@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.0</version>
+		<version>3.4.4</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.peaknote</groupId>
@@ -47,6 +47,22 @@
 			<artifactId>microsoft-graph</artifactId>
 			<version>5.70.0</version> <!-- 最新版本可查 Maven Central -->
 		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.18.32</version> <!-- ✅ 使用最新版本 -->
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.ai</groupId>
+			<artifactId>spring-ai-openai-spring-boot-starter</artifactId>
+			<version>1.0.0-M6</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-amqp</artifactId>
+		</dependency>
+
 
 		<dependency>
 			<groupId>com.azure</groupId>
@@ -67,6 +83,8 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
+
 
 	<build>
 		<plugins>

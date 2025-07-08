@@ -6,38 +6,29 @@ import com.azure.identity.ClientSecretCredential;
 import com.azure.identity.ClientSecretCredentialBuilder;
 import com.microsoft.graph.authentication.TokenCredentialAuthProvider;
 import com.microsoft.graph.requests.GraphServiceClient;
+
+import lombok.RequiredArgsConstructor;
 import okhttp3.Request;
 
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-
 import java.util.List;
 
+@RequiredArgsConstructor
 @Configuration
 public class GraphClientConfig {
 
-    @Value("${webhook.tenant-id}")
-    private String tenantId;
-
-    @Value("${webhook.client-id}")
-    private String clientId;
-
-    @Value("${webhook.client-secret}")
-    private String clientSecret;
-
-
-    public String token;
+    private final AzureProperties azureProperties;
+    private final WebhookProperties webhookProperties;
 
     @Bean
     @Qualifier("webhookGraphClient")
     public GraphServiceClient<Request>  webhookGraphClient() {
         ClientSecretCredential credential = new ClientSecretCredentialBuilder()
-                .clientId(clientId)
-                .clientSecret(clientSecret)
-                .tenantId(tenantId)
+                .clientId(webhookProperties.getClientId())
+                .clientSecret(webhookProperties.getClientSecret())
+                .tenantId(webhookProperties.getTenantId())
                 .build();
 
         TokenCredentialAuthProvider authProvider =
@@ -51,15 +42,11 @@ public class GraphClientConfig {
 
     @Bean
     @Qualifier("graphClient")
-    public GraphServiceClient<Request>graphClient(
-        @Value("${azure.client-id}") String subClientId,
-        @Value("${azure.client-secret}") String subClientSecret,
-        @Value("${azure.tenant-id}") String subTenantId
-) {
+    public GraphServiceClient<Request>graphClient() {
     ClientSecretCredential credential = new ClientSecretCredentialBuilder()
-            .clientId(subClientId)
-            .clientSecret(subClientSecret)
-            .tenantId(subTenantId)
+            .clientId(azureProperties.getClientId())
+            .clientSecret(azureProperties.getClientSecret())
+            .tenantId(azureProperties.getTenantId())
             .build();
 
     TokenCredentialAuthProvider authProvider =
@@ -69,28 +56,14 @@ public class GraphClientConfig {
             .builder()
             .authenticationProvider(authProvider)
             .buildClient();
-}
+        }
 
     @Bean
-    public ThreadPoolTaskExecutor transcriptTaskExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(5);
-        executor.setMaxPoolSize(10);
-        executor.setQueueCapacity(20);
-        executor.setThreadNamePrefix("transcript-pool-");
-        executor.initialize();
-        return executor;
-    }
-
-    @Bean
-    @Qualifier("getAccessToken")
-    public static String getAccessToken(@Value("${azure.client-id}") String ClientId,
-        @Value("${azure.client-secret}") String ClientSecret,
-        @Value("${azure.tenant-id}") String TenantId) {
+    public String getAccessToken() {
         ClientSecretCredential credential = new ClientSecretCredentialBuilder()
-                .clientId(ClientId)
-                .clientSecret(ClientSecret)
-                .tenantId(TenantId)
+                .clientId(azureProperties.getClientId())
+                .clientSecret(azureProperties.getClientSecret())
+                .tenantId(azureProperties.getTenantId())
                 .build();
 
         TokenRequestContext requestContext = new TokenRequestContext()
