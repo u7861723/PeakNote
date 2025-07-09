@@ -90,4 +90,18 @@ public class PayloadParserService {
             return null;
         }
     }
+
+        public String extractChangeType(String payload) {
+        try {
+            JsonNode root = objectMapper.readTree(payload);
+            JsonNode valueArray = root.get("value");
+            if (valueArray != null && valueArray.isArray() && valueArray.size() > 0) {
+                JsonNode first = valueArray.get(0);
+                return first.get("changeType").asText();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("解析 changeType 失败", e);
+        }
+        return null;
+    }
 }
