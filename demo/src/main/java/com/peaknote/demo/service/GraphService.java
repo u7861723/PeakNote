@@ -107,7 +107,7 @@ public class GraphService {
         subscription.resource = "/communications/onlineMeetings/" + meetingId + "/transcripts";
         subscription.expirationDateTime = expireTime;
         subscription.clientState = clientState;
-        subscription.lifecycleNotificationUrl = "https://96af28290b34.ngrok-free.app/webhook/teams-lifecycle";
+        subscription.lifecycleNotificationUrl = "https://f52013a23ac6.ngrok-free.app/webhook/teams-lifecycle";
 
         return webhookGraphClient.subscriptions()
                 .buildRequest()
@@ -130,6 +130,16 @@ public class GraphService {
         webhookGraphClient.subscriptions(subscriptionId)
                 .buildRequest()
                 .delete();
+    }
+
+    //续订订阅
+    public Subscription renewSubscription(String subscriptionId, OffsetDateTime newExpiration) {
+        Subscription subscription = new Subscription();
+        subscription.expirationDateTime = newExpiration;
+
+        return graphClient.subscriptions(subscriptionId)
+            .buildRequest()
+            .patch(subscription);
     }
 }
 

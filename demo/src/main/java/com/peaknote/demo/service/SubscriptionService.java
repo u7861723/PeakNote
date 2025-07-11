@@ -2,15 +2,21 @@ package com.peaknote.demo.service;
 
 import com.microsoft.graph.models.Subscription;
 import com.microsoft.graph.requests.SubscriptionCollectionPage;
+import com.peaknote.demo.entity.GraphUserSubscription;
 import com.peaknote.demo.entity.TeamsUser;
 import com.peaknote.demo.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import com.peaknote.demo.repository.GraphUserSubscriptionRepository;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
+@RequiredArgsConstructor
 @Service
 public class SubscriptionService {
 
@@ -18,12 +24,7 @@ public class SubscriptionService {
 
     private final GraphService graphService;;
     private final UserRepository userRepository;
-
-
-    public SubscriptionService(GraphService graphService, UserRepository userRepository) {
-        this.graphService = graphService;
-        this.userRepository = userRepository;
-    }
+    private final GraphUserSubscriptionRepository graphUserSubscriptionRepository;
 
     /**
      * 为所有用户创建订阅
@@ -45,12 +46,18 @@ public class SubscriptionService {
     public void createEventSubscription(String userId) {
         try {
             // subscription.changeType = "created,updated,deleted";
-            String notificationUrl = "https://96af28290b34.ngrok-free.app/webhook/notification";
+            String notificationUrl = "https://f52013a23ac6.ngrok-free.app/webhook/notification";
             OffsetDateTime expireTime = OffsetDateTime.now().plusHours(2);
             String clientState = "yourCustomState";
             Subscription created = graphService.createEventSubscription(userId, notificationUrl, clientState, expireTime);
 
             log.info("✅ 成功为用户 {} 创建订阅: {}", userId, created.id);
+
+            //存进数据库
+            GraphUserSubscription graphUserSubscription = new GraphUserSubscription();
+            graphUserSubscription.setId(created.id);
+            graphUserSubscription.setExpirationDateTime(expireTime);
+            graphUserSubscriptionRepository.save(graphUserSubscription);
         } catch (Exception e) {
             log.error("❌ 用户 {} 创建订阅失败: {}", userId, e.getMessage(), e);
         }
@@ -111,7 +118,7 @@ public class SubscriptionService {
         try {
             OffsetDateTime expireTime = OffsetDateTime.now().plusHours(8);
             String clientState = UUID.randomUUID().toString();
-            String notificationUrl = "https://96af28290b34.ngrok-free.app/webhook/teams-transcript"; // ✅ 修改成你自己的回调地址
+            String notificationUrl = "https://f52013a23ac6.ngrok-free.app/webhook/teams-transcript"; // ✅ 修改成你自己的回调地址
 
             Subscription created = graphService.createTranscriptSubscription(meetingId, notificationUrl, clientState, expireTime);
 
