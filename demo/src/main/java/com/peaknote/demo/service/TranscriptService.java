@@ -3,8 +3,10 @@ package com.peaknote.demo.service;
 import okhttp3.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import com.microsoft.graph.requests.GraphServiceClient;
 import com.peaknote.demo.entity.MeetingEvent;
@@ -12,30 +14,30 @@ import com.peaknote.demo.entity.MeetingTranscript;
 import com.peaknote.demo.repository.MeetingEventRepository;
 import com.peaknote.demo.repository.MeetingTranscriptRepository;
 
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Service
+@RequiredArgsConstructor
 public class TranscriptService {
 
-    @Autowired
-    MeetingSummaryService meetingSummaryService;
 
+    private final MeetingSummaryService meetingSummaryService;
     private static final Logger log = LoggerFactory.getLogger(TranscriptService.class);
+    @Qualifier("graphClient")
     private final GraphServiceClient<Request> graphClient;
     private final MeetingEventRepository meetingEventRepository;
     private final MeetingTranscriptRepository meetingTranscriptRepository;
+    private final StringRedisTemplate redisTemplate;
 
-    public TranscriptService(@Qualifier("graphClient") GraphServiceClient<Request> graphClient,
-                             MeetingEventRepository meetingEventRepository,
-                             MeetingTranscriptRepository meetingTranscriptRepository) {
-        this.graphClient = graphClient;
-        this.meetingEventRepository = meetingEventRepository;
-        this.meetingTranscriptRepository = meetingTranscriptRepository;
-    }
     /**
      * 下载 transcript 内容
      *
@@ -95,5 +97,66 @@ public class TranscriptService {
             log.error("❌ 下载 transcript 出错: {}", e.getMessage(), e);
             return;
         }
+    }
+
+        /**
+     * 根据 URL 查询所有 EventId 列表，并缓存
+     */
+    @Cacheable(value = "urlEventCache", key = "#url")
+    public List<String> getEventIdsByUrl(String url) {
+        log.info("准备查询的 URL 长度: {}", url.length());
+        log.info("准备查询的 URL: '{}'", url);
+        byte[] bytes = url.getBytes(StandardCharsets.UTF_8);
+StringBuilder hexBuilder = new StringBuilder();
+for (byte b : bytes) {
+    hexBuilder.append(String.format("%02X ", b));
+}
+log.info("URL 对应字节长度: {}", bytes.length);
+log.info("URL 十六进制: {}", hexBuilder.toString());
+        List<String> eventIds = meetingEventRepository.findEventIdsByjoinUrl(url);
+        if(eventIds.size()>0){
+            log.info("✅ 从数据库加载 EventId 列表，url={}, eventIds={}", url, eventIds);
+            return eventIds;
+        }else{
+            log.warn("⚠️ 未找到 url，url={}", url);
+            return null; // 存入null，防止消息穿透
+        }
+    }
+
+    /**
+     * 根据 EventId 查询 transcript，带缓存
+     */
+    @Cacheable(value = "transcriptCache", key = "#eventId")
+    public String getTranscriptByEventId(String eventId) {
+        MeetingTranscript transcript = meetingTranscriptRepository.findByMeetingEvent_EventId(eventId);
+        if (transcript != null) {
+            log.info("✅ 从数据库加载 transcript，eventId={}", eventId);
+            return transcript.getContentText();
+        } else {
+            log.warn("⚠️ 未找到 transcript，eventId={}", eventId);
+            return null; // 存入null，防止消息穿透
+        }
+    }
+
+        /**
+     * 更新 transcript（数据库更新 + 延迟双删）
+     */
+    @CacheEvict(value = "transcriptCache", key = "#eventId")
+    @Transactional
+    public void updateTranscript(String eventId, String newContent) {
+        meetingTranscriptRepository.updateContentByEventId(eventId, newContent);
+        log.info("✅ 已更新数据库中的 transcript，eventId={}", eventId);
+
+        // 延迟双删，防止并发读取到脏数据
+        CompletableFuture.runAsync(() -> {
+            try {
+                Thread.sleep(500); // 延迟 500ms
+                redisTemplate.delete("transcriptCache::" + eventId);
+                log.info("✅ 延迟双删完成，eventId={}", eventId);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.error("❌ 延迟双删异常", e);
+            }
+        });
     }
 }

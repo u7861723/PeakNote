@@ -8,6 +8,8 @@ import com.peaknote.demo.repository.MeetingEventRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 
@@ -54,7 +56,7 @@ public class GraphEventService {
         entity.setEventId(event.id);
         entity.setUserId(userId);
         entity.setSubject(event.subject);
-        entity.setJoinUrl(event.onlineMeeting != null ? event.onlineMeeting.joinUrl : null);
+        entity.setJoinUrl(event.onlineMeeting != null ? URLDecoder.decode(event.onlineMeeting.joinUrl, StandardCharsets.UTF_8) : null);
         entity.setStartTime(parseGraphDateTime(event.start.dateTime));
         entity.setEndTime(parseGraphDateTime(event.end.dateTime));
 
