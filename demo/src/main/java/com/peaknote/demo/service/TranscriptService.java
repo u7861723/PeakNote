@@ -1,6 +1,9 @@
 package com.peaknote.demo.service;
 
 import okhttp3.Request;
+
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -24,6 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +41,7 @@ public class TranscriptService {
     private final MeetingEventRepository meetingEventRepository;
     private final MeetingTranscriptRepository meetingTranscriptRepository;
     private final StringRedisTemplate redisTemplate;
+    private final RedissonClient redissonClient;
 
     /**
      * 下载 transcript 内容
@@ -139,24 +144,42 @@ log.info("URL 十六进制: {}", hexBuilder.toString());
     }
 
         /**
-     * 更新 transcript（数据库更新 + 延迟双删）
+     * 更新 transcript（数据库更新 + 延迟双删 + redisson分布式锁）
      */
     @CacheEvict(value = "transcriptCache", key = "#eventId")
     @Transactional
     public void updateTranscript(String eventId, String newContent) {
-        meetingTranscriptRepository.updateContentByEventId(eventId, newContent);
-        log.info("✅ 已更新数据库中的 transcript，eventId={}", eventId);
+        String lockKey = "lock:transcript:" + eventId;
+        RLock lock = redissonClient.getLock(lockKey);
 
-        // 延迟双删，防止并发读取到脏数据
-        CompletableFuture.runAsync(() -> {
-            try {
-                Thread.sleep(500); // 延迟 500ms
-                redisTemplate.delete("transcriptCache::" + eventId);
-                log.info("✅ 延迟双删完成，eventId={}", eventId);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                log.error("❌ 延迟双删异常", e);
+        try{
+            if(lock.tryLock(10,30,TimeUnit.SECONDS)){
+                log.info("成功获取分布式锁，eventId={}", eventId);
+                meetingTranscriptRepository.updateContentByEventId(eventId, newContent);
+                log.info("✅ 已更新数据库中的 transcript，eventId={}", eventId);
+
+                // 延迟双删，防止并发读取到脏数据
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        Thread.sleep(500); // 延迟 500ms
+                        redisTemplate.delete("transcriptCache::" + eventId);
+                        log.info("✅ 延迟双删完成，eventId={}", eventId);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        log.error("❌ 延迟双删异常", e);
+                    }
+                });
+            }else{
+                log.warn("⚠️ 获取锁超时，eventId={}", eventId);
             }
-        });
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.error("❌ 加锁时被中断", e);
+        } finally {
+            if (lock.isHeldByCurrentThread()) {
+                lock.unlock();
+                log.info("✅ 已释放锁，eventId={}", eventId);
+            }
+        }
     }
 }
