@@ -5,24 +5,26 @@ import com.microsoft.graph.requests.EventCollectionPage;
 import com.microsoft.graph.requests.OnlineMeetingCollectionPage;
 import com.peaknote.demo.entity.MeetingEvent;
 import com.peaknote.demo.repository.MeetingEventRepository;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
+@RequiredArgsConstructor
 @Service
 public class GraphEventService {
-    
+
+    private final SubscriptionService subscriptionService;
     private final GraphService graphService;
     private final MeetingEventRepository repository;
-
-    public GraphEventService(GraphService graphService, MeetingEventRepository repository) {
-        this.graphService = graphService;
-        this.repository = repository;
-    }
 
     @Transactional
     public void processEvent(String userId, String eventId, boolean isRecurring) {
@@ -60,11 +62,25 @@ public class GraphEventService {
         entity.setStartTime(parseGraphDateTime(event.start.dateTime));
         entity.setEndTime(parseGraphDateTime(event.end.dateTime));
 
+            // 判断是否为当天的会议
+        boolean isToday = entity.getStartTime()
+            .atZone(ZoneOffset.systemDefault())
+            .toLocalDate()
+            .isEqual(LocalDate.now());
+        
         if (event.onlineMeeting != null && event.onlineMeeting.joinUrl != null) {
             OnlineMeetingCollectionPage meetings = graphService.getOnlineMeetingsByJoinUrl(userId, event.onlineMeeting.joinUrl);
             if (!meetings.getCurrentPage().isEmpty()) {
                 String meetingId = meetings.getCurrentPage().get(0).id;
                 entity.setMeetingId(meetingId);
+                if (isToday) {
+                    try {
+                        subscriptionService.createTranscriptSubscription(meetingId);
+                        entity.setTranscriptStatus("subscribed");
+                    } catch (Exception e) {
+                        entity.setTranscriptStatus("none");
+                    }
+                }
             }
         }
 

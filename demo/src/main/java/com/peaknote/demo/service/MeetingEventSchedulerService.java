@@ -6,7 +6,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 @Service
@@ -24,15 +28,16 @@ public class MeetingEventSchedulerService {
     }
 
     /**
-     * 每 5 分钟执行一次
+     * 每天01：00执行
      */
-    @Scheduled(cron = "0 0/1 * * * ?")
+    @Scheduled(cron = "0 0 1 * * ?")
     public void subscribeRecentMeetings() {
-        OffsetDateTime now = OffsetDateTime.now();
-        OffsetDateTime fiveMinutesAgo = now.minusMinutes(5);
+        LocalDate today = LocalDate.now();
+        OffsetDateTime startOfDay = today.atStartOfDay(ZoneOffset.systemDefault()).toOffsetDateTime();
+        OffsetDateTime endOfDay = today.atTime(LocalTime.MAX).atZone(ZoneOffset.systemDefault()).toOffsetDateTime();
 
                 List<MeetingEvent> events = meetingEventRepository.findByStartTimeBetweenAndTranscriptStatus(
-                fiveMinutesAgo.toInstant(), now.toInstant(), "none"
+                startOfDay.toInstant(), endOfDay.toInstant(), "none"
         );
 
         if (events.isEmpty()) {

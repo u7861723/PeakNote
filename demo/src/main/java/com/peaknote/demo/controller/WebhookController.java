@@ -1,6 +1,5 @@
 package com.peaknote.demo.controller;
 
-import com.peaknote.demo.model.TranscriptInfo;
 import com.peaknote.demo.service.GraphEventService;
 import com.peaknote.demo.service.GraphService;
 import com.peaknote.demo.service.MessageProducer;
