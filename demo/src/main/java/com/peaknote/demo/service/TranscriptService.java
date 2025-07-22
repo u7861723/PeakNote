@@ -155,6 +155,7 @@ log.info("URL 十六进制: {}", hexBuilder.toString());
         try{
             if(lock.tryLock(10,30,TimeUnit.SECONDS)){
                 log.info("成功获取分布式锁，eventId={}", eventId);
+                redisTemplate.delete("transcriptCache::" + eventId);
                 meetingTranscriptRepository.updateContentByEventId(eventId, newContent);
                 log.info("✅ 已更新数据库中的 transcript，eventId={}", eventId);
 
