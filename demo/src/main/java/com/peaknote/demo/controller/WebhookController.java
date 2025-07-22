@@ -27,8 +27,6 @@ public class WebhookController {
     private final PayloadParserService payloadParserService;
     private final SubscriptionService subscriptionService;
     private final MessageProducer messageProducer;
-    @Qualifier("getAccessToken")
-    private final String accessToken;
     private final GraphService graphService;
 
     @GetMapping("/notification")

@@ -14,7 +14,7 @@ public class MeetingSummaryService {
     }
 
     public String generateSummary(String transcriptContent) {
-        String prompt = "请将以下会议内容总结为一份结构化会议纪要，包含主要讨论点、决策、待办事项等：\n\n" + transcriptContent;
+        String prompt = "Please summarize the meeting content into a structured meeting minutes, including the main discussion points, decisions, and tasks to be completed:\n\n" + transcriptContent;
 
         // Spring AI 1.0.0 新写法，链式
         return chatClient

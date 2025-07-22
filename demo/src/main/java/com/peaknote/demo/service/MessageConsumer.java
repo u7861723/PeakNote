@@ -22,7 +22,6 @@ public class MessageConsumer {
     private final GraphService graphService;
     private final GraphEventService graphEventService;
     private final TranscriptService transcriptService;
-    private final String accessToken;
     private final StringRedisTemplate stringRedisTemplate;
 
     @RabbitListener(queues = EVENT_QUEUE, containerFactory = "rabbitListenerContainerFactory")
@@ -72,7 +71,7 @@ public class MessageConsumer {
                     transcriptInfo.getUserId(),
                     transcriptInfo.getMeetingId(),
                     transcriptInfo.getTranscriptId(),
-                    accessToken
+                    graphService.getAccessToken()
             );
         } catch (Exception e) {
             log.error("❌ 处理 Transcript 消息失败: {}", e.getMessage(), e);

@@ -3,6 +3,10 @@ package com.peaknote.demo.service;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import com.azure.core.credential.AccessToken;
+import com.azure.core.credential.TokenRequestContext;
+import com.azure.identity.ClientSecretCredential;
+import com.azure.identity.ClientSecretCredentialBuilder;
 import com.microsoft.graph.models.Event;
 import com.microsoft.graph.models.Subscription;
 import com.microsoft.graph.models.User;
@@ -14,6 +18,7 @@ import com.microsoft.graph.requests.EventCollectionPage;
 import com.microsoft.graph.requests.GraphServiceClient;
 import com.microsoft.graph.requests.OnlineMeetingCollectionPage;
 import com.microsoft.graph.requests.SubscriptionCollectionPage;
+import com.peaknote.demo.config.AzureProperties;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -27,12 +32,15 @@ public class GraphService {
 
     private final GraphServiceClient<Request> graphClient;
     private final GraphServiceClient<Request> webhookGraphClient;
+    private final AzureProperties azureProperties;
 
     public GraphService(
         @Qualifier("graphClient")GraphServiceClient<Request> graphClient,
-        @Qualifier("webhookGraphClient") GraphServiceClient<Request> webhookGraphClient) {
+        @Qualifier("webhookGraphClient") GraphServiceClient<Request> webhookGraphClient,
+        AzureProperties azureProperties) {
         this.graphClient = graphClient;
         this.webhookGraphClient = webhookGraphClient;
+        this.azureProperties = azureProperties;
     }
 
     //获取所有租户用户
@@ -107,7 +115,7 @@ public class GraphService {
         subscription.resource = "/communications/onlineMeetings/" + meetingId + "/transcripts";
         subscription.expirationDateTime = expireTime;
         subscription.clientState = clientState;
-        subscription.lifecycleNotificationUrl = "https://141c730e2194.ngrok-free.app/webhook/teams-lifecycle";
+        subscription.lifecycleNotificationUrl = "https://68316233e15d.ngrok-free.app/webhook/teams-lifecycle";
 
         return webhookGraphClient.subscriptions()
                 .buildRequest()
@@ -141,5 +149,19 @@ public class GraphService {
             .buildRequest()
             .patch(subscription);
     }
+
+    public String getAccessToken() {
+    ClientSecretCredential credential = new ClientSecretCredentialBuilder()
+            .clientId(azureProperties.getClientId())
+            .clientSecret(azureProperties.getClientSecret())
+            .tenantId(azureProperties.getTenantId())
+            .build();
+
+    TokenRequestContext requestContext = new TokenRequestContext()
+            .addScopes("https://graph.microsoft.com/.default");
+
+    AccessToken accessToken = credential.getToken(requestContext).block();
+    return accessToken.getToken();
+}
 }
 
