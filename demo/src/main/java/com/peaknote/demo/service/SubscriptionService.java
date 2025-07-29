@@ -6,25 +6,37 @@ import com.peaknote.demo.entity.GraphUserSubscription;
 import com.peaknote.demo.entity.TeamsUser;
 import com.peaknote.demo.repository.UserRepository;
 
-import lombok.RequiredArgsConstructor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.peaknote.demo.repository.GraphUserSubscriptionRepository;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
-@RequiredArgsConstructor
 @Service
 public class SubscriptionService {
 
     private static final Logger log = LoggerFactory.getLogger(SubscriptionService.class);
 
-    private final GraphService graphService;;
+    private final String webhookUrl;
+    private final GraphService graphService;
     private final UserRepository userRepository;
     private final GraphUserSubscriptionRepository graphUserSubscriptionRepository;
+
+    public SubscriptionService(
+            @Value("${notification-url}") String webhookUrl,
+            GraphService graphService,
+            UserRepository userRepository,
+            GraphUserSubscriptionRepository graphUserSubscriptionRepository
+    ) {
+        this.webhookUrl = webhookUrl;
+        this.graphService = graphService;
+        this.userRepository = userRepository;
+        this.graphUserSubscriptionRepository = graphUserSubscriptionRepository;
+    }
 
     /**
      * 为所有用户创建订阅
@@ -46,7 +58,7 @@ public class SubscriptionService {
     public void createEventSubscription(String userId) {
         try {
             // subscription.changeType = "created,updated,deleted";
-            String notificationUrl = "https://renewing-macaque-jolly.ngrok-free.app/webhook/notification";
+            String notificationUrl = webhookUrl + "webhook/notification";
             OffsetDateTime expireTime = OffsetDateTime.now().plusHours(2);
             String clientState = "yourCustomState";
             Subscription created = graphService.createEventSubscription(userId, notificationUrl, clientState, expireTime);
@@ -118,7 +130,7 @@ public class SubscriptionService {
         try {
             OffsetDateTime expireTime = OffsetDateTime.now().plusHours(8);
             String clientState = UUID.randomUUID().toString();
-            String notificationUrl = "https://renewing-macaque-jolly.ngrok-free.app/webhook/teams-transcript"; // ✅ 修改成你自己的回调地址
+            String notificationUrl = webhookUrl + "webhook/teams-transcript"; // ✅ 修改成你自己的回调地址
 
             Subscription created = graphService.createTranscriptSubscription(meetingId, notificationUrl, clientState, expireTime);
 
