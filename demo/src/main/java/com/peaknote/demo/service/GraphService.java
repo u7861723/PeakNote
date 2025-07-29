@@ -1,6 +1,7 @@
 package com.peaknote.demo.service;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.azure.core.credential.AccessToken;
@@ -20,24 +21,33 @@ import com.microsoft.graph.requests.OnlineMeetingCollectionPage;
 import com.microsoft.graph.requests.SubscriptionCollectionPage;
 import com.peaknote.demo.config.AzureProperties;
 
+
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-
 @Service
 public class GraphService {
 
+
+    private final String webhookUrl;
+
+    @Qualifier("graphClient")
     private final GraphServiceClient<Request> graphClient;
+
+    @Qualifier("webhookGraphClient")
     private final GraphServiceClient<Request> webhookGraphClient;
+
     private final AzureProperties azureProperties;
 
     public GraphService(
-        @Qualifier("graphClient")GraphServiceClient<Request> graphClient,
-        @Qualifier("webhookGraphClient") GraphServiceClient<Request> webhookGraphClient,
-        AzureProperties azureProperties) {
+            @Value("${notification-url}") String webhookUrl,
+            @Qualifier("graphClient") GraphServiceClient<Request> graphClient,
+            @Qualifier("webhookGraphClient") GraphServiceClient<Request> webhookGraphClient,
+            AzureProperties azureProperties) {
+        this.webhookUrl = webhookUrl;
         this.graphClient = graphClient;
         this.webhookGraphClient = webhookGraphClient;
         this.azureProperties = azureProperties;
@@ -115,8 +125,8 @@ public class GraphService {
         subscription.resource = "/communications/onlineMeetings/" + meetingId + "/transcripts";
         subscription.expirationDateTime = expireTime;
         subscription.clientState = clientState;
-        subscription.lifecycleNotificationUrl = "https://renewing-macaque-jolly.ngrok-free.app/webhook/teams-lifecycle";
-
+        //subscription.lifecycleNotificationUrl = "https://8fca4ce341a6.ngrok-free.app/webhook/teams-lifecycle";
+          subscription.lifecycleNotificationUrl = webhookUrl + "webhook/teams-lifecycle";
         return webhookGraphClient.subscriptions()
                 .buildRequest()
                 .post(subscription);
