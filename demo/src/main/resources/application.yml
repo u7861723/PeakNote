@@ -54,7 +54,8 @@ webhook:
   client-id: ${WEBHOOK_CLIENT_ID}
   client-secret: ${WEBHOOK_CLIENT_SECRET}
 
-notification-url: ${NOTIFICATION_URL}
+notification-url: https://8fca4ce341a6.ngrok-free.app/
+# notification-url: ${NOTIFICATION_URL}
 
 logging:
   level:
