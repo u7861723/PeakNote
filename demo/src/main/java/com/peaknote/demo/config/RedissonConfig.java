@@ -1,21 +1,34 @@
 package com.peaknote.demo.config;
 
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.beans.factory.annotation.Value;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RedissonConfig {
 
-    @Bean
+    @Value("${spring.redis.host}")
+    private String redisHost;
+
+    @Value("${spring.redis.port}")
+    private int redisPort;
+
+    @Value("${spring.redis.password}")
+    private String redisPassword;
+
+    @Bean(destroyMethod = "shutdown")
     public RedissonClient redissonClient() {
         Config config = new Config();
-        // 单机模式
+        String redisAddress = String.format("rediss://%s:%d", redisHost, redisPort);
         config.useSingleServer()
-              .setAddress("redis://127.0.0.1:6379")
+              .setAddress(redisAddress)
+              .setPassword(redisPassword)
               .setDatabase(0);
         return Redisson.create(config);
     }
 }
+
+
