@@ -26,12 +26,13 @@ jobs:
 
       - name: Build with Maven
         run: mvn clean install
+        working-directory: demo
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: java-app
-          path: '${{ github.workspace }}/target/*.jar'
+          path: 'demo/target/*.jar'
 
   deploy:
     runs-on: ubuntu-latest
