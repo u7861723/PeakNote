@@ -115,7 +115,7 @@ public class GraphService {
         subscription.resource = "/communications/onlineMeetings/" + meetingId + "/transcripts";
         subscription.expirationDateTime = expireTime;
         subscription.clientState = clientState;
-        subscription.lifecycleNotificationUrl = "https://68316233e15d.ngrok-free.app/webhook/teams-lifecycle";
+        subscription.lifecycleNotificationUrl = "https://8fca4ce341a6.ngrok-free.app/webhook/teams-lifecycle";
 
         return webhookGraphClient.subscriptions()
                 .buildRequest()

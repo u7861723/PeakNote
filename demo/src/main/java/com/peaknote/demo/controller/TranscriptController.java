@@ -4,6 +4,8 @@ import com.peaknote.demo.service.TranscriptService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -31,6 +33,8 @@ public class TranscriptController {
     // }
     @GetMapping("/by-url")
     public Map<String, String> getTranscriptsByUrl(@RequestParam String url) {
+        //String decodedUrl = URLDecoder.decode(url, StandardCharsets.UTF_8);
+
         List<String> eventIds = transcriptService.getEventIdsByUrl(url);
         if (eventIds == null || eventIds.isEmpty()) {
             return Map.of("transcript", "");

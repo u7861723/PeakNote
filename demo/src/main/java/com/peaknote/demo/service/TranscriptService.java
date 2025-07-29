@@ -20,6 +20,7 @@ import com.peaknote.demo.repository.MeetingTranscriptRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import java.net.URI;
+import java.net.URLDecoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -72,8 +73,6 @@ public class TranscriptService {
                 String content = response.body();
                 log.info("✅ 成功获取 transcript 内容，准备保存数据库");
                 System.out.println(content);
-                String summary = meetingSummaryService.generateSummary(content);
-                System.out.println(summary);
                 // 根据 eventId 查找 MeetingEvent
                 MeetingEvent meetingEvent = meetingEventRepository.findByMeetingIdAndTranscriptStatus(meetingId, "subscribed");
                 if (meetingEvent == null) {
@@ -81,6 +80,9 @@ public class TranscriptService {
                     return;
                 }
                 String eventId = meetingEvent.getEventId();
+                Instant startTime = meetingEvent.getStartTime();
+                String summary = meetingSummaryService.generateSummary(startTime,content);
+                System.out.println(summary);
 
                 // 创建并保存 MeetingTranscript
                 MeetingTranscript transcript = new MeetingTranscript();
@@ -111,13 +113,14 @@ public class TranscriptService {
     public List<String> getEventIdsByUrl(String url) {
         log.info("准备查询的 URL 长度: {}", url.length());
         log.info("准备查询的 URL: '{}'", url);
+        //String decodedUrl = URLDecoder.decode(url, StandardCharsets.UTF_8);
         byte[] bytes = url.getBytes(StandardCharsets.UTF_8);
-StringBuilder hexBuilder = new StringBuilder();
-for (byte b : bytes) {
-    hexBuilder.append(String.format("%02X ", b));
-}
-log.info("URL 对应字节长度: {}", bytes.length);
-log.info("URL 十六进制: {}", hexBuilder.toString());
+        StringBuilder hexBuilder = new StringBuilder();
+        for (byte b : bytes) {
+            hexBuilder.append(String.format("%02X ", b));
+        }
+        log.info("URL 对应字节长度: {}", bytes.length);
+        log.info("URL 十六进制: {}", hexBuilder.toString());
         List<String> eventIds = meetingEventRepository.findEventIdsByjoinUrl(url);
         if(eventIds.size()>0){
             log.info("✅ 从数据库加载 EventId 列表，url={}, eventIds={}", url, eventIds);
@@ -146,7 +149,7 @@ log.info("URL 十六进制: {}", hexBuilder.toString());
         /**
      * 更新 transcript（数据库更新 + 延迟双删 + redisson分布式锁）
      */
-    @CacheEvict(value = "transcriptCache", key = "#eventId")
+    @CacheEvict(value = "transcriptCache", key = "#eventId", beforeInvocation = true)
     @Transactional
     public void updateTranscript(String eventId, String newContent) {
         String lockKey = "lock:transcript:" + eventId;
