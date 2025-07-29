@@ -66,7 +66,8 @@ logging:
           descriptor:
             sql:
               BasicBinder: trace
-              
+
 server:
-  port: ${PORT:8080}
+  port: 80
+
 
