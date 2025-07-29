@@ -1,0 +1,68 @@
+spring:
+  application:
+    name: demo
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+
+  ai:
+    openai:
+      api-key: ${AI_OPENAI_API_KEY}
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+      ssl: true
+      timeout: 5000
+
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000
+      cache-null-values: true
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+azure:
+  tenant-id: ${AZURE_TENANT_ID}
+  client-id: ${AZURE_CLIENT_ID}
+  client-secret: ${AZURE_CLIENT_SECRET}
+  graph:
+    scope: ${AZURE_GRAPH_SCOPE}
+
+webhook:
+  tenant-id: ${WEBHOOK_TENANT_ID}
+  client-id: ${WEBHOOK_CLIENT_ID}
+  client-secret: ${WEBHOOK_CLIENT_SECRET}
+
+notification-url: ${NOTIFICATION_URL}
+
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: debug
+        type:
+          descriptor:
+            sql:
+              BasicBinder: trace
+
