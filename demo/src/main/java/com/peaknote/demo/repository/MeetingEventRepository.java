@@ -26,6 +26,8 @@ public interface MeetingEventRepository extends JpaRepository<MeetingEvent, Stri
      */
     MeetingEvent findByEventId(String eventId);
 
+    
+
     @Query("SELECT m.eventId FROM MeetingEvent m WHERE m.joinUrl = :joinUrl")
     List<String> findEventIdsByjoinUrl(@Param("joinUrl") String joinUrl);
 
