@@ -59,7 +59,7 @@ public class SubscriptionService {
         try {
             // subscription.changeType = "created,updated,deleted";
             String notificationUrl = webhookUrl + "webhook/notification";
-            OffsetDateTime expireTime = OffsetDateTime.now().plusHours(2);
+            OffsetDateTime expireTime = OffsetDateTime.now().plusHours(24);
             String clientState = "yourCustomState";
             Subscription created = graphService.createEventSubscription(userId, notificationUrl, clientState, expireTime);
 

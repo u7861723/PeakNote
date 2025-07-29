@@ -83,6 +83,14 @@ public class TranscriptService {
                 Instant startTime = meetingEvent.getStartTime();
                 String summary = meetingSummaryService.generateSummary(startTime,content);
                 System.out.println(summary);
+                String meetingUrl = meetingEvent.getJoinUrl();
+                try {
+                    redisTemplate.delete("transcriptCache::" + eventId);
+                    redisTemplate.delete("urlEventCache::" + meetingUrl);
+                    log.info("✅ delete: transcriptCache::{} 和 urlEventCache::{}", eventId, meetingUrl);
+                } catch (Exception e) {
+                    log.error("❌ failed in deleting redis", e);
+                }
 
                 // 创建并保存 MeetingTranscript
                 MeetingTranscript transcript = new MeetingTranscript();
