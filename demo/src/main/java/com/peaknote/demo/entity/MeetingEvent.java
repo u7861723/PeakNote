@@ -2,6 +2,7 @@ package com.peaknote.demo.entity;
 
 import jakarta.persistence.*;
 import java.time.Instant;
+import java.util.List;
 
 @Entity
 @Table(name = "meeting_event")
@@ -22,6 +23,10 @@ public class MeetingEvent {
     private Instant lastNotifiedAt;
     @Column(name = "transcript_status")
     private String transcriptStatus = "none"; // 默认 none
+
+    @OneToMany(mappedBy = "meetingEvent")
+    private List<MeetingAttendee> attendees;
+
 
     
     public String getEventId() {
@@ -83,6 +88,12 @@ public class MeetingEvent {
     }
     public void setTranscriptStatus(String transcriptStatus) {
         this.transcriptStatus = transcriptStatus;
+    }
+    public List<MeetingAttendee> getAttendees() {
+        return attendees;
+    }
+    public void setAttendees(List<MeetingAttendee> attendees) {
+        this.attendees = attendees;
     }
 
 }

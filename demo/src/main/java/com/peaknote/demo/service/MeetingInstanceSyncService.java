@@ -28,7 +28,7 @@ public class MeetingInstanceSyncService {
     private final MeetingInstanceRepository meetingRepo;
     
     public MeetingInstanceSyncService(
-        GraphServiceClient<?> graphClient,
+        @org.springframework.beans.factory.annotation.Qualifier("graphClient") GraphServiceClient<?> graphClient,
         UserRepository userRepository,
         MeetingInstanceRepository meetingRepo
     ) {

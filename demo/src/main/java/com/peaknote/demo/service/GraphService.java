@@ -8,6 +8,9 @@ import com.azure.core.credential.AccessToken;
 import com.azure.core.credential.TokenRequestContext;
 import com.azure.identity.ClientSecretCredential;
 import com.azure.identity.ClientSecretCredentialBuilder;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.graph.models.Event;
 import com.microsoft.graph.models.Subscription;
 import com.microsoft.graph.models.User;
@@ -20,37 +23,38 @@ import com.microsoft.graph.requests.GraphServiceClient;
 import com.microsoft.graph.requests.OnlineMeetingCollectionPage;
 import com.microsoft.graph.requests.SubscriptionCollectionPage;
 import com.peaknote.demo.config.AzureProperties;
-
+import com.peaknote.demo.entity.MeetingAttendee;
+import com.peaknote.demo.entity.MeetingEvent;
+import com.peaknote.demo.repository.MeetingAttendeeRepository;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class GraphService {
 
 
     private final String webhookUrl;
-
-    @Qualifier("graphClient")
     private final GraphServiceClient<Request> graphClient;
-
-    @Qualifier("webhookGraphClient")
     private final GraphServiceClient<Request> webhookGraphClient;
-
     private final AzureProperties azureProperties;
+    private final MeetingAttendeeRepository meetingAttendeeRepository;
 
     public GraphService(
             @Value("${notification-url}") String webhookUrl,
             @Qualifier("graphClient") GraphServiceClient<Request> graphClient,
             @Qualifier("webhookGraphClient") GraphServiceClient<Request> webhookGraphClient,
-            AzureProperties azureProperties) {
+            AzureProperties azureProperties,
+            MeetingAttendeeRepository meetingAttendeeRepository) {
         this.webhookUrl = webhookUrl;
         this.graphClient = graphClient;
         this.webhookGraphClient = webhookGraphClient;
         this.azureProperties = azureProperties;
+        this.meetingAttendeeRepository = meetingAttendeeRepository;
     }
 
     //获取所有租户用户
@@ -173,5 +177,52 @@ public class GraphService {
     AccessToken accessToken = credential.getToken(requestContext).block();
     return accessToken.getToken();
 }
+
+public void getAttendees(MeetingEvent meetingEvent, String userId, String meetingId) throws JsonProcessingException {
+    // 构造获取 attendanceReports 列表的 URL
+    String reportsUrl = String.format(
+            "/users/%s/onlineMeetings/%s/attendanceReports",
+            userId, meetingId);
+
+    // 先获取 attendanceReports 列表
+    Map reportsResponse = graphClient
+            .customRequest(reportsUrl, Map.class)
+            .buildRequest()
+            .get();
+
+    List<Map<String, Object>> reports = (List<Map<String, Object>>) reportsResponse.get("value");
+    if (reports == null || reports.isEmpty()) {
+        throw new IllegalStateException("未找到任何 attendanceReports，会议可能未生成报告");
+    }
+
+    // 只取第一个 report（也可以循环多个）
+    String reportId = (String) reports.get(0).get("id");
+
+    // 构造获取详细 report（带参会人员）的 URL，带上 $expand
+    String detailUrl = String.format(
+            "/users/%s/onlineMeetings/%s/attendanceReports/%s?$expand=attendanceRecords",
+            userId, meetingId, reportId);
+
+    // 获取参会人员详情
+    Object detailResponse = graphClient
+            .customRequest(detailUrl, Object.class)
+            .buildRequest()
+            .get();
+
+    ObjectMapper mapper = new ObjectMapper();
+    String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(detailResponse);
+    JsonNode rootNode = new ObjectMapper().readTree(json);
+    JsonNode records = rootNode.get("attendanceRecords");
+    for(JsonNode record: records){
+        String email = record.get("emailAddress").asText();
+        String displayName = record.get("identity").get("displayName").asText();
+        MeetingAttendee attendee = new MeetingAttendee();
+        attendee.setDisplayName(displayName);
+        attendee.setUserEmail(email);
+        attendee.setMeetingEvent(meetingEvent);
+        meetingAttendeeRepository.save(attendee);
+    }
+    System.out.println("参会详情 JSON：\n" + json);
+    }
 }
 

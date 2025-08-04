@@ -6,7 +6,9 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import com.peaknote.demo.entity.MeetingEvent;
 import com.peaknote.demo.model.TranscriptInfo;
+import com.peaknote.demo.repository.MeetingEventRepository;
 
 import static com.peaknote.demo.config.RabbitMQConfig.EVENT_QUEUE;
 import static com.peaknote.demo.config.RabbitMQConfig.TRANSCRIPT_QUEUE;
@@ -23,6 +25,8 @@ public class MessageConsumer {
     private final GraphEventService graphEventService;
     private final TranscriptService transcriptService;
     private final StringRedisTemplate stringRedisTemplate;
+    private final MeetingEventRepository meetingEventRepository;
+    // private final AttendanceService attendanceService;
 
     @RabbitListener(queues = EVENT_QUEUE, containerFactory = "rabbitListenerContainerFactory")
     public void handleEventMessage(String payload) {
@@ -67,12 +71,22 @@ public class MessageConsumer {
                 log.info("✅ 已关闭订阅 ID: {}", subscriptionId);
             }
 
+            MeetingEvent meetingEvent = meetingEventRepository.findByMeetingIdAndTranscriptStatus(transcriptInfo.getMeetingId(), "subscribed");
+            if (meetingEvent == null) {
+                log.error("❌ 未找到对应会议事件，eventId={}", transcriptInfo.getMeetingId());
+                return;
+            }
+
             transcriptService.downloadTranscriptContent(
                     transcriptInfo.getUserId(),
                     transcriptInfo.getMeetingId(),
                     transcriptInfo.getTranscriptId(),
                     graphService.getAccessToken()
             );
+            
+            graphService.getAttendees(meetingEvent, transcriptInfo.getUserId(), transcriptInfo.getMeetingId());
+
+
         } catch (Exception e) {
             log.error("❌ 处理 Transcript 消息失败: {}", e.getMessage(), e);
         }

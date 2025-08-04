@@ -51,4 +51,6 @@ public class TranscriptController {
         transcriptService.updateTranscript(eventId, content);
         return "✅ success";
     }
+
+    
 }
