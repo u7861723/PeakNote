@@ -1,0 +1,151 @@
+# =============================================================================
+# PeakNote Backend Test Configuration
+# =============================================================================
+# This file is used for testing in CI/CD environments
+# =============================================================================
+
+# Server Configuration
+server:
+  port: 0  # Random port for testing
+
+# Spring Application Configuration
+spring:
+  application:
+    name: peaknote-backend-test
+  
+  # Database Configuration (MySQL) - Test Database
+  datasource:
+    url: jdbc:mysql://localhost:3306/peaknote_test?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: testpassword
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 10000
+      idle-timeout: 300000
+      max-lifetime: 900000
+
+  # JPA Configuration for Testing
+  jpa:
+    hibernate:
+      ddl-auto: create-drop  # Clean database for each test
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: false
+        use_sql_comments: false
+    open-in-view: false
+
+  # Redis Configuration for Testing
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      password: 
+      database: 1  # Use different database for testing
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 4
+          max-idle: 4
+          min-idle: 0
+          max-wait: -1ms
+
+  # RabbitMQ Configuration for Testing
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+    listener:
+      simple:
+        default-requeue-rejected: false
+        retry:
+          enabled: false  # Disable retry for faster tests
+
+# Azure Configuration for Testing
+azure:
+  tenant-id: test-tenant-id
+  client-id: test-client-id
+  client-secret: test-client-secret
+  graph:
+    scope: https://graph.microsoft.com/.default
+
+# Webhook Configuration for Testing
+webhook:
+  tenant-id: test-tenant-id
+  client-id: test-client-id
+  client-secret: test-client-secret
+
+# OpenAI Configuration for Testing
+  ai:
+    openai:
+      api-key: test-openai-key
+      base-url: https://api.openai.com
+      chat:
+        options:
+          model: gpt-3.5-turbo  # Use cheaper model for testing
+          temperature: 0.7
+          max-tokens: 1000
+
+  # Redisson Configuration for Testing
+  data:
+    redisson:
+      config: |
+        singleServerConfig:
+          address: "redis://127.0.0.1:6379"
+          password: ""
+          database: 1
+          connectionPoolSize: 4
+          connectionMinimumIdleSize: 1
+          idleConnectionTimeout: 5000
+          connectTimeout: 5000
+          timeout: 1000
+          retryAttempts: 1
+          retryInterval: 500
+
+# Logging Configuration for Testing
+logging:
+  level:
+    root: WARN
+    com.peaknote.demo: INFO
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN
+  pattern:
+    console: "%d{HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Management Endpoints for Testing
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+# Custom Application Properties for Testing
+app:
+  # Graph API Configuration
+  graph:
+    subscription-renewal-interval: 1h
+    max-subscription-duration: 1d
+    webhook-url: https://test-domain.com/api/webhook
+  
+  # Meeting Configuration
+  meeting:
+    sync-interval: 60000  # 1 minute for faster tests
+    transcript-retention-days: 1
+  
+  # AI Configuration
+  ai:
+    summary-max-length: 100
+    transcript-chunk-size: 1000
+  
+  # Cache Configuration
+  cache:
+    ttl: 60  # 1 minute for faster tests
+    max-size: 10 

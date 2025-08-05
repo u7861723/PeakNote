@@ -1,0 +1,198 @@
+# =============================================================================
+# PeakNote Backend Application Configuration Template
+# =============================================================================
+# Copy this file to application.yml and fill in your actual values
+# =============================================================================
+
+# Server Configuration
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+# Spring Application Configuration
+spring:
+  application:
+    name: peaknote-backend
+  
+  # Database Configuration (MySQL)
+  datasource:
+    url: jdbc:mysql://localhost:3306/peaknote?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+        use_sql_comments: true
+    open-in-view: false
+
+  # Redis Configuration
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DATABASE:0}
+      timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
+
+  # RabbitMQ Configuration
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    virtual-host: ${RABBITMQ_VHOST:/}
+    listener:
+      simple:
+        default-requeue-rejected: false
+        retry:
+          enabled: true
+          initial-interval: 1000ms
+          max-attempts: 3
+          multiplier: 1.0
+          max-interval: 10000ms
+
+# Azure Configuration
+azure:
+  tenant-id: ${AZURE_TENANT_ID:your-tenant-id}
+  client-id: ${AZURE_CLIENT_ID:your-client-id}
+  client-secret: ${AZURE_CLIENT_SECRET:your-client-secret}
+  graph:
+    scope: ${AZURE_GRAPH_SCOPE:https://graph.microsoft.com/.default}
+
+# Webhook Configuration
+webhook:
+  tenant-id: ${WEBHOOK_TENANT_ID:your-tenant-id}
+  client-id: ${WEBHOOK_CLIENT_ID:your-client-id}
+  client-secret: ${WEBHOOK_CLIENT_SECRET:your-client-secret}
+
+# OpenAI Configuration
+spring:
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:your-openai-api-key}
+      base-url: ${OPENAI_BASE_URL:https://api.openai.com}
+      chat:
+        options:
+          model: ${OPENAI_MODEL:gpt-4}
+          temperature: 0.7
+          max-tokens: 4000
+
+# Redisson Configuration
+spring:
+  data:
+    redisson:
+      config: |
+        singleServerConfig:
+          address: "redis://${REDIS_HOST:localhost}:${REDIS_PORT:6379}"
+          password: "${REDIS_PASSWORD:}"
+          database: ${REDIS_DATABASE:0}
+          connectionPoolSize: 64
+          connectionMinimumIdleSize: 10
+          idleConnectionTimeout: 10000
+          connectTimeout: 10000
+          timeout: 3000
+          retryAttempts: 3
+          retryInterval: 1500
+          subscriptionsPerConnection: 5
+          subscriptionConnectionMinimumIdleSize: 1
+          subscriptionConnectionPoolSize: 50
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    com.peaknote.demo: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/peaknote-backend.log
+
+# Management Endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Custom Application Properties
+app:
+  # Graph API Configuration
+  graph:
+    subscription-renewal-interval: 23h
+    max-subscription-duration: 3d
+    webhook-url: ${WEBHOOK_URL:https://your-domain.com/api/webhook}
+  
+  # Meeting Configuration
+  meeting:
+    sync-interval: 300000 # 5 minutes in milliseconds
+    transcript-retention-days: 30
+  
+  # AI Configuration
+  ai:
+    summary-max-length: 500
+    transcript-chunk-size: 4000
+  
+  # Cache Configuration
+  cache:
+    ttl: 3600 # 1 hour in seconds
+    max-size: 1000
+
+# =============================================================================
+# Environment Variables Reference
+# =============================================================================
+# Required Environment Variables:
+# - DB_USERNAME: MySQL database username
+# - DB_PASSWORD: MySQL database password
+# - REDIS_HOST: Redis server hostname
+# - REDIS_PORT: Redis server port
+# - REDIS_PASSWORD: Redis password (if applicable)
+# - REDIS_DATABASE: Redis database number
+# - RABBITMQ_HOST: RabbitMQ server hostname
+# - RABBITMQ_PORT: RabbitMQ server port
+# - RABBITMQ_USERNAME: RabbitMQ username
+# - RABBITMQ_PASSWORD: RabbitMQ password
+# - RABBITMQ_VHOST: RabbitMQ virtual host
+# - AZURE_TENANT_ID: Azure AD tenant ID
+# - AZURE_CLIENT_ID: Azure AD client ID
+# - AZURE_CLIENT_SECRET: Azure AD client secret
+# - AZURE_GRAPH_SCOPE: Microsoft Graph API scope
+# - WEBHOOK_TENANT_ID: Webhook tenant ID
+# - WEBHOOK_CLIENT_ID: Webhook client ID
+# - WEBHOOK_CLIENT_SECRET: Webhook client secret
+# - WEBHOOK_URL: Webhook callback URL
+# - OPENAI_API_KEY: OpenAI API key
+# - OPENAI_BASE_URL: OpenAI API base URL (optional)
+# - OPENAI_MODEL: OpenAI model name
+# =============================================================================

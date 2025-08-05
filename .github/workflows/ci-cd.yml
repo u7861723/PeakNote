@@ -67,6 +67,11 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
 
+    - name: Setup test configuration
+      run: |
+        echo "Using application-test.yml for testing environment"
+        # The test profile will automatically use application-test.yml
+
     - name: Run tests
       run: ./mvnw clean test
       env:
@@ -134,6 +139,8 @@ jobs:
       run: |
         echo "Deploying to staging environment..."
         # Add your staging deployment commands here
+        # Example: kubectl apply -f k8s/staging/
+        # or: docker push your-registry/peaknote-backend:staging
 
   deploy-production:
     needs: build
@@ -153,3 +160,5 @@ jobs:
       run: |
         echo "Deploying to production environment..."
         # Add your production deployment commands here
+        # Example: kubectl apply -f k8s/production/
+        # or: docker push your-registry/peaknote-backend:latest

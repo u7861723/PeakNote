@@ -341,3 +341,82 @@ For support and questions:
 ---
 
 **PeakNote** - Transforming meetings into actionable intelligence
+
+## Configuration
+
+### Using the Template
+
+The project includes an `application.yml.template` file that you can use as a starting point:
+
+1. **Copy the template:**
+   ```bash
+   cp src/main/resources/application.yml.template src/main/resources/application.yml
+   ```
+
+2. **Set environment variables** for your deployment environment:
+   ```bash
+   export DB_USERNAME=your_db_username
+   export DB_PASSWORD=your_db_password
+   export REDIS_HOST=your_redis_host
+   export AZURE_TENANT_ID=your_azure_tenant_id
+   export AZURE_CLIENT_ID=your_azure_client_id
+   export AZURE_CLIENT_SECRET=your_azure_client_secret
+   export OPENAI_API_KEY=your_openai_api_key
+   # ... and other required variables
+   ```
+
+3. **Or set them in your deployment environment** (Docker, Kubernetes, etc.)
+
+### Environment-Specific Configuration
+
+- **Development**: Use `application.yml` with local environment variables
+- **Testing**: Uses `application-test.yml` automatically when `SPRING_PROFILES_ACTIVE=test`
+- **Production**: Use `application.yml` with production environment variables
+
+### Required Environment Variables
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `DB_USERNAME` | MySQL database username | `root` |
+| `DB_PASSWORD` | MySQL database password | `your_password` |
+| `REDIS_HOST` | Redis server hostname | `localhost` |
+| `REDIS_PORT` | Redis server port | `6379` |
+| `RABBITMQ_HOST` | RabbitMQ server hostname | `localhost` |
+| `AZURE_TENANT_ID` | Azure AD tenant ID | `your-tenant-id` |
+| `AZURE_CLIENT_ID` | Azure AD client ID | `your-client-id` |
+| `AZURE_CLIENT_SECRET` | Azure AD client secret | `your-client-secret` |
+| `OPENAI_API_KEY` | OpenAI API key | `sk-...` |
+
+## CI/CD with GitHub Actions
+
+The project includes a GitHub Actions workflow that:
+
+1. **Runs tests** with MySQL, Redis, and RabbitMQ services
+2. **Builds the application** and creates a Docker image
+3. **Deploys to staging** when pushing to `develop` branch
+4. **Deploys to production** when pushing to `main` branch
+
+### Testing in CI/CD
+
+The workflow automatically:
+- Uses `application-test.yml` for testing
+- Sets up test databases and services
+- Runs with optimized settings for faster execution
+- Generates test reports
+
+### Deployment
+
+To deploy to your environments:
+
+1. **Set up GitHub Secrets** for your deployment environments
+2. **Configure your deployment targets** in the workflow
+3. **Push to the appropriate branch** to trigger deployment
+
+Example deployment commands (uncomment in workflow):
+```yaml
+# For Kubernetes
+kubectl apply -f k8s/staging/
+
+# For Docker Registry
+docker push your-registry/peaknote-backend:staging
+```
