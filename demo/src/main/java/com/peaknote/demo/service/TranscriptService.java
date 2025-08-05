@@ -156,7 +156,7 @@ public class TranscriptService {
         /**
      * 更新 transcript（数据库更新 + 延迟双删 + redisson分布式锁）
      */
-    @CacheEvict(value = "transcriptCache", key = "#eventId", beforeInvocation = true)
+    //@CacheEvict(value = "transcriptCache", key = "#eventId", beforeInvocation = true)
     @Transactional
     public void updateTranscript(String eventId, String newContent) {
         String lockKey = "lock:transcript:" + eventId;
