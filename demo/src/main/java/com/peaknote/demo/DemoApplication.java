@@ -4,8 +4,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.EnableScheduling;
-
-import com.peaknote.demo.service.MeetingInstanceSyncService;
 import com.peaknote.demo.service.SubscriptionService;
 import com.peaknote.demo.service.TeamsUserSyncService;
 
