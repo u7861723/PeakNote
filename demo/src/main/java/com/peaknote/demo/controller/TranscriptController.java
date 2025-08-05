@@ -40,7 +40,7 @@ public class TranscriptController {
             return Map.of("transcript", "");
         }
         String transcript = transcriptService.getTranscriptByEventId(eventIds.get(0));
-        return Map.of("transcript", transcript);
+        return Map.of("eventId",eventIds.get(0),"transcript", transcript);
     }
 
     /**
