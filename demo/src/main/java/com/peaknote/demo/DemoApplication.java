@@ -18,19 +18,21 @@ import com.peaknote.demo.service.TeamsUserSyncService;
 public class DemoApplication {
 	private final SubscriptionService subscriptionService;
 
-	// private final TeamsUserSyncService teamsUserSyncService;
+	private final TeamsUserSyncService teamsUserSyncService;
 	// private final MeetingInstanceSyncService meetingInstanceSyncService;
 
 	// public DemoApplication(TeamsUserSyncService teamsUserSyncService,MeetingInstanceSyncService meetingInstanceSyncService) {
 	// 	this.teamsUserSyncService = teamsUserSyncService;
 	// 	this.meetingInstanceSyncService = meetingInstanceSyncService;
 	// }
-	public DemoApplication(SubscriptionService subscriptionService){
+	public DemoApplication(SubscriptionService subscriptionService,TeamsUserSyncService teamsUserSyncService){
 		this.subscriptionService = subscriptionService;
+		this.teamsUserSyncService = teamsUserSyncService;
 	}
 
 	@EventListener(ApplicationReadyEvent.class)
 	public void runAfterStartup() throws InterruptedException {
+	teamsUserSyncService.syncUsers();
 	System.out.print("整在1删除之前的订阅");
 	subscriptionService.listAndDeleteAllSubscriptions();
     System.out.println("🟡 正在为所有用户注册订阅...");
@@ -41,6 +43,7 @@ public class DemoApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(DemoApplication.class, args);
+
     }
 	//  @EventListener(ApplicationReadyEvent.class)
 	// public void  runAfterStartup() {
