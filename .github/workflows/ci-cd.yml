@@ -45,6 +45,15 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Install redis-cli
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y redis-tools
+
+    - name: Wait for Redis to be ready
+      run: |
+        timeout 60 bash -c 'until redis-cli -h 127.0.0.1 ping | grep PONG; do sleep 1; done'
+
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
