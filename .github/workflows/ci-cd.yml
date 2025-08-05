@@ -2,7 +2,16 @@ name: CI/CD Pipeline
 
 on:
   push:
+    branches:
+      - '**'
   pull_request:
+    branches:
+      - '**'
+
+permissions:
+  checks: write
+  contents: read
+  pull-requests: read
 
 jobs:
   test:
