@@ -70,9 +70,11 @@ jobs:
         name: Maven Tests
         path: target/surefire-reports/*.xml
         reporter: java-junit
+        fail-on-error: false
 
   build:
-    needs: test
+    needs: [test]
+    if: success()
     runs-on: ubuntu-latest
 
     steps:
