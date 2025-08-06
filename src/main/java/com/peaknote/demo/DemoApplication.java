@@ -16,14 +16,15 @@ import com.peaknote.demo.service.TeamsUserSyncService;
 public class DemoApplication {
 	private final SubscriptionService subscriptionService;
 
-	// private final TeamsUserSyncService teamsUserSyncService;
+	private final TeamsUserSyncService teamsUserSyncService;
 	// private final MeetingInstanceSyncService meetingInstanceSyncService;
 
 	// public DemoApplication(TeamsUserSyncService teamsUserSyncService,MeetingInstanceSyncService meetingInstanceSyncService) {
 	// 	this.teamsUserSyncService = teamsUserSyncService;
 	// 	this.meetingInstanceSyncService = meetingInstanceSyncService;
 	// }
-	public DemoApplication(SubscriptionService subscriptionService){
+	public DemoApplication(SubscriptionService subscriptionService, TeamsUserSyncService teamsUserSyncService){
+        this.teamsUserSyncService = teamsUserSyncService;
 		this.subscriptionService = subscriptionService;
 	}
 
