@@ -24,7 +24,7 @@ public class DemoApplication {
 	// 	this.meetingInstanceSyncService = meetingInstanceSyncService;
 	// }
 	public DemoApplication(SubscriptionService subscriptionService, TeamsUserSyncService teamsUserSyncService){
-        this.teamsUserSyncService = teamsUserSyncService;
+		this.teamsUserSyncService = teamsUserSyncService;
 		this.subscriptionService = subscriptionService;
 	}
 
