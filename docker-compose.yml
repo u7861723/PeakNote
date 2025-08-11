@@ -10,6 +10,8 @@ services:
       MYSQL_DATABASE: peaknote
     ports:
       - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
     command: --default-authentication-plugin=mysql_native_password
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
@@ -46,3 +48,5 @@ services:
       timeout: 5s
       retries: 5
 
+volumes:
+  mysql_data:
