@@ -30,7 +30,11 @@ public class DemoApplication {
 
 	@EventListener(ApplicationReadyEvent.class)
 	public void runAfterStartup() throws InterruptedException {
-	System.out.print("整在1删除之前的订阅");
+	System.out.println("🟡 Starting user sync...");
+	teamsUserSyncService.syncUsers();
+	System.out.println("✅ User sync complete.");
+	
+	System.out.println("🟡 删除之前的订阅");
 	subscriptionService.listAndDeleteAllSubscriptions();
     System.out.println("🟡 正在为所有用户注册订阅...");
     subscriptionService.createSubscriptionsForAllUsers();
