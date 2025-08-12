@@ -19,7 +19,7 @@ public interface MeetingEventRepository extends JpaRepository<MeetingEvent, Stri
     /**
      * 根据 meetingId 和转录状态查询单个会议事件
      */
-    MeetingEvent findByMeetingIdAndTranscriptStatus(String meetingId, String transcriptStatus);
+    MeetingEvent findFirstByMeetingIdAndTranscriptStatus(String meetingId, String transcriptStatus);
 
     /**
      * 根据 eventId 查询
