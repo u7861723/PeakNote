@@ -71,7 +71,7 @@ public class MessageConsumer {
                 log.info("✅ 已关闭订阅 ID: {}", subscriptionId);
             }
 
-            MeetingEvent meetingEvent = meetingEventRepository.findByMeetingIdAndTranscriptStatus(transcriptInfo.getMeetingId(), "subscribed");
+            MeetingEvent meetingEvent = meetingEventRepository.findFirstByMeetingIdAndTranscriptStatus(transcriptInfo.getMeetingId(), "subscribed");
             if (meetingEvent == null) {
                 log.error("❌ 未找到对应会议事件，eventId={}", transcriptInfo.getMeetingId());
                 return;

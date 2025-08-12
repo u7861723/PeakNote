@@ -73,7 +73,7 @@ public class TranscriptService {
                 log.info("✅ 成功获取 transcript 内容，准备保存数据库");
                 System.out.println(content);
                 // 根据 eventId 查找 MeetingEvent
-                MeetingEvent meetingEvent = meetingEventRepository.findByMeetingIdAndTranscriptStatus(meetingId, "subscribed");
+                MeetingEvent meetingEvent = meetingEventRepository.findFirstByMeetingIdAndTranscriptStatus(meetingId, "subscribed");
                 if (meetingEvent == null) {
                     log.error("❌ 未找到对应会议事件，eventId={}", meetingId);
                     return;
