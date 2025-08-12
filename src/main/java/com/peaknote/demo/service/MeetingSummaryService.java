@@ -55,7 +55,7 @@ public class MeetingSummaryService {
 
             Your final output should be a professional, easy-to-read document that feels custom-built for the specific conversation it represents.
     
-            The meeting is conducted at AEST
+            The meeting is conducted online at AEST
       """ + startTime.toString();
 
 
