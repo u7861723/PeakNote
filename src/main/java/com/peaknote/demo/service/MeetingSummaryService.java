@@ -54,7 +54,9 @@ public class MeetingSummaryService {
             List each item clearly, assigning ownership if mentioned in the transcript (e.g., "AI-1: [Name/Role] to get tickets for the 5th test.").
 
             Your final output should be a professional, easy-to-read document that feels custom-built for the specific conversation it represents.
-      """;
+    
+            The meeting is conducted at AEST
+      """ + startTime.toString();
 
 
 
