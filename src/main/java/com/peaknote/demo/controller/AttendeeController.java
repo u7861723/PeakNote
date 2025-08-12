@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.peaknote.demo.service.MeetingAttendeeService;
 
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/attendees")
 public class AttendeeController {
