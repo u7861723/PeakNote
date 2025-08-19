@@ -55,7 +55,7 @@ public class TeamsUserSyncService {
         } catch (Exception e) {
             System.err.println("❌ User sync service failed: " + e.getMessage());
             e.printStackTrace();
-            throw new RuntimeException("User sync failed", e);
+            throw new PeakNoteException("User sync failed", e);
         }
     }
 }
