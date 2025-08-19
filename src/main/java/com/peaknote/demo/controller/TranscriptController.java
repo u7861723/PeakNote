@@ -42,7 +42,7 @@ public class TranscriptController {
 
             List<String> eventIds = transcriptService.getEventIdsByUrl(url);
             if (eventIds == null || eventIds.isEmpty()) {
-                return Map.of("transcript", "");
+                throw new IllegalArgumentException("URL do not exist");
             }
             String transcript = transcriptService.getTranscriptByEventId(eventIds.get(0));
             return Map.of("eventId", eventIds.get(0), "transcript", transcript);
