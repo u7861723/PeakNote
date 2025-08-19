@@ -33,6 +33,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import com.peaknote.demo.util.ErrorHandler;
+import com.peaknote.demo.exception.PeakNoteException;
 
 @Service
 public class GraphService {
@@ -57,45 +59,73 @@ public class GraphService {
         this.meetingAttendeeRepository = meetingAttendeeRepository;
     }
 
-    //获取所有租户用户
+    // Fetch all tenant users
     public List<User> fetchAllUsers() {
-        List<User> result = new ArrayList<>();
-        var page = graphClient.users()
-                .buildRequest()
-                .select("id,mail,userPrincipalName")
-                .top(50)
-                .get();
+        try {
+            List<User> result = new ArrayList<>();
+            var page = graphClient.users()
+                    .buildRequest()
+                    .select("id,mail,userPrincipalName")
+                    .top(50)
+                    .get();
 
-        while (page != null) {
-            result.addAll(page.getCurrentPage());
-            page = page.getNextPage() != null ? page.getNextPage().buildRequest().get() : null;
+            while (page != null) {
+                result.addAll(page.getCurrentPage());
+                page = page.getNextPage() != null ? page.getNextPage().buildRequest().get() : null;
+            }
+            return result;
+        } catch (Exception e) {
+            System.err.println("❌ Failed to fetch user list: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to fetch user list", e);
         }
-        return result;
     }
 
-    //获取某个用户的单个事件
-        public Event getUserEvent(String userId, String eventId) {
-        return webhookGraphClient
-                .users(userId)
-                .events(eventId)
-                .buildRequest()
-                .get();
+    // Get a single event for a specific user
+    public Event getUserEvent(String userId, String eventId) {
+        try {
+            if (userId == null || userId.trim().isEmpty() || eventId == null || eventId.trim().isEmpty()) {
+                throw new IllegalArgumentException("User ID and Event ID cannot be empty");}
+            ErrorHandler.validateNotEmpty(userId, "User ID");
+            ErrorHandler.validateNotEmpty(eventId, "Event ID");
+            
+            return webhookGraphClient
+                    .users(userId)
+                    .events(eventId)
+                    .buildRequest()
+                    .get();
+         }catch (Exception e) {
+            System.err.println("❌ Failed to get user event: userId=" + userId + ", eventId=" + eventId + ", error=" + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to get user event", e);
+        }
     }
 
-    //根据joinUrl查询OnlineMeting
-        public OnlineMeetingCollectionPage getOnlineMeetingsByJoinUrl(String userId, String joinUrl) {
-        String filter = "JoinWebUrl eq '" + joinUrl + "'";
-        QueryOption option = new QueryOption("$filter", filter);
+    // Query OnlineMeeting by joinUrl
+    public OnlineMeetingCollectionPage getOnlineMeetingsByJoinUrl(String userId, String joinUrl) {
+        try {
+            if (userId == null || userId.trim().isEmpty() || joinUrl == null || joinUrl.trim().isEmpty()) {
+                throw new IllegalArgumentException("User ID and Join URL cannot be empty");}
+            ErrorHandler.validateNotEmpty(userId, "User ID");
+            ErrorHandler.validateNotEmpty(joinUrl, "Join URL");
+            
+            String filter = "JoinWebUrl eq '" + joinUrl + "'";
+            QueryOption option = new QueryOption("$filter", filter);
 
-        return graphClient
-                .users(userId)
-                .onlineMeetings()
-                .buildRequest(Collections.singletonList(option))
-                .get();
+            return graphClient
+                    .users(userId)
+                    .onlineMeetings()
+                    .buildRequest(Collections.singletonList(option))
+                    .get();
+        } catch (Exception e) {
+            System.err.println("❌ Failed to query online meeting by URL: userId=" + userId + ", joinUrl=" + joinUrl + ", error=" + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to query online meeting", e);
+        }
     }
 
-    //获取系列会议的每个实例
-        public EventCollectionPage getEventOccurrences(String userId, String seriesMasterId, String startDateTime, String endDateTime) {
+    // Get each instance of a series meeting
+    public EventCollectionPage getEventOccurrences(String userId, String seriesMasterId, String startDateTime, String endDateTime) {
         return webhookGraphClient
                 .users(userId)
                 .events(seriesMasterId)
@@ -107,7 +137,7 @@ public class GraphService {
                 .get();
     }
 
-        //创建对Event的订阅
+        // Create subscription for Event
         public Subscription createEventSubscription(String userId, String notificationUrl, String clientState, OffsetDateTime expireTime) {
         Subscription subscription = new Subscription();
         subscription.changeType = "created";
@@ -121,7 +151,7 @@ public class GraphService {
                 .post(subscription);
     }
 
-    //创建对Transcript的订阅
+    // Create subscription for Transcript
     public Subscription createTranscriptSubscription(String meetingId, String notificationUrl, String clientState, OffsetDateTime expireTime) {
         Subscription subscription = new Subscription();
         subscription.changeType = "created";
@@ -137,7 +167,7 @@ public class GraphService {
     }
 
         /**
-     * 列出所有订阅
+     * List all subscriptions
      */
     public SubscriptionCollectionPage listAllSubscriptions() {
         return webhookGraphClient.subscriptions()
@@ -146,7 +176,7 @@ public class GraphService {
     }
 
     /**
-     * 删除指定订阅
+     * Delete specified subscription
      */
     public void deleteSubscription(String subscriptionId) {
         webhookGraphClient.subscriptions(subscriptionId)
@@ -154,7 +184,7 @@ public class GraphService {
                 .delete();
     }
 
-    //续订订阅
+    // Renew subscription
     public Subscription renewSubscription(String subscriptionId, OffsetDateTime newExpiration) {
         Subscription subscription = new Subscription();
         subscription.expirationDateTime = newExpiration;
@@ -179,12 +209,12 @@ public class GraphService {
 }
 
 public void getAttendees(MeetingEvent meetingEvent, String userId, String meetingId) throws JsonProcessingException {
-    // 构造获取 attendanceReports 列表的 URL
+    // Construct URL to get attendanceReports list
     String reportsUrl = String.format(
             "/users/%s/onlineMeetings/%s/attendanceReports",
             userId, meetingId);
 
-    // 先获取 attendanceReports 列表
+    // First get the attendanceReports list
     Map reportsResponse = graphClient
             .customRequest(reportsUrl, Map.class)
             .buildRequest()
@@ -192,18 +222,18 @@ public void getAttendees(MeetingEvent meetingEvent, String userId, String meetin
 
     List<Map<String, Object>> reports = (List<Map<String, Object>>) reportsResponse.get("value");
     if (reports == null || reports.isEmpty()) {
-        throw new IllegalStateException("未找到任何 attendanceReports，会议可能未生成报告");
+        throw new IllegalStateException("No attendanceReports found, meeting may not have generated reports");
     }
 
-    // 只取第一个 report（也可以循环多个）
+    // Only take the first report (can also loop through multiple)
     String reportId = (String) reports.get(0).get("id");
 
-    // 构造获取详细 report（带参会人员）的 URL，带上 $expand
+    // Construct URL to get detailed report (with attendees) using $expand
     String detailUrl = String.format(
             "/users/%s/onlineMeetings/%s/attendanceReports/%s?$expand=attendanceRecords",
             userId, meetingId, reportId);
 
-    // 获取参会人员详情
+    // Get attendee details
     Object detailResponse = graphClient
             .customRequest(detailUrl, Object.class)
             .buildRequest()
@@ -222,7 +252,7 @@ public void getAttendees(MeetingEvent meetingEvent, String userId, String meetin
         attendee.setMeetingEvent(meetingEvent);
         meetingAttendeeRepository.save(attendee);
     }
-    System.out.println("参会详情 JSON：\n" + json);
+    System.out.println("Attendee details JSON:\n" + json);
     }
 }
 

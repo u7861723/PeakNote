@@ -9,9 +9,9 @@ public class MeetingInstance {
     
     @Id
     @Column(name = "event_id")
-    private String eventId;  // Microsoft Graph 中每个实例的唯一标识
+    private String eventId;  // Unique identifier for each instance in Microsoft Graph
 
-    private String seriesMasterId;  // 用于标识属于哪个重复会议系列
+    private String seriesMasterId;  // Used to identify which recurring meeting series it belongs to
 
     public String getSeriesMasterId() {
         return seriesMasterId;
@@ -38,10 +38,10 @@ public class MeetingInstance {
     private Instant createdAt;
 
 public enum TranscriptStatus {
-    NONE,           // 未处理
-    PROCESSING,     // 提交转录请求后
-    AVAILABLE,      // 成功获取转录
-    FAILED          // 获取转录失败
+            NONE,           // Not processed
+        PROCESSING,     // After submitting transcription request
+            AVAILABLE,      // Successfully obtained transcription
+        FAILED          // Failed to obtain transcription
 }
 
     public String geteventId() {

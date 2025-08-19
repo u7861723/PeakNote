@@ -10,7 +10,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 public class RedisConfig {
 
     /**
-     * 推荐使用 StringRedisTemplate（直接操作字符串更简单）
+     * Recommended to use StringRedisTemplate (direct string operations are simpler)
      */
     @Bean
     public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory factory) {

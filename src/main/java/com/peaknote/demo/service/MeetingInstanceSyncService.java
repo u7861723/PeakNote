@@ -71,7 +71,7 @@ public class MeetingInstanceSyncService {
                     .appendPattern("yyyy-MM-dd'T'HH:mm:ss")
                     .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true)
                     .toFormatter()
-                    .withZone(ZoneOffset.UTC); // 或根据你的实际情况使用 ZoneId.of("UTC");
+                    .withZone(ZoneOffset.UTC); // Or use ZoneId.of("UTC") based on your actual situation;
 
                     MeetingInstance instance = new MeetingInstance();
                     instance.seteventId(event.id);

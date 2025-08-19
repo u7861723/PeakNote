@@ -12,7 +12,7 @@ public class RedissonConfig {
     @Bean
     public RedissonClient redissonClient() {
         Config config = new Config();
-        // 单机模式
+        // Standalone mode
         config.useSingleServer()
               .setAddress("redis://127.0.0.1:6379")
               .setDatabase(0);

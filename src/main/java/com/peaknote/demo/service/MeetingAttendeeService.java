@@ -19,7 +19,22 @@ public class MeetingAttendeeService {
     }
 
     public Map<String, Object> getAttendeesByEventId(String eventId) {
+        // Validate eventId parameter
+        if (eventId == null || eventId.trim().isEmpty()) {
+            throw new IllegalArgumentException("Event ID cannot be null or empty");
+        }
+        
         List<MeetingAttendee> attendees = meetingAttendeeRepository.findByMeetingEvent_EventId(eventId);
+        
+        // Check if attendees list is null (database error)
+        if (attendees == null) {
+            throw new RuntimeException("Database error occurred while searching for attendees");
+        }
+        
+        // Check if no attendees found for the given eventId
+        if (attendees.isEmpty()) {
+            throw new RuntimeException("No attendees found for event ID: " + eventId);
+        }
 
         List<Map<String, String>> users = attendees.stream().map(a -> {
             Map<String, String> map = new HashMap<>();

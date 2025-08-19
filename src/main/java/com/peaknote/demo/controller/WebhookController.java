@@ -30,7 +30,7 @@ public class WebhookController {
 
     @GetMapping("/notification")
     public ResponseEntity<String> validateGet(@RequestParam("validationToken") String token) {
-        log.info("✅ 收到 Graph 验证 GET 请求，返回 token: {}", token);
+        log.info("✅ Received Graph validation GET request, returning token: {}", token);
         return ResponseEntity.ok(token);
     }
 
@@ -39,21 +39,21 @@ public class WebhookController {
                                                      @RequestBody(required = false) String payload) {
         String token = request.getParameter("validationToken");
         if (token != null) {
-            log.info("✅ 收到 Graph 验证 POST 请求，返回 token: {}", token);
+            log.info("✅ Received Graph validation POST request, returning token: {}", token);
             return ResponseEntity.ok(token);
         }
 
         try {
-            log.info("✅ 收到事件 webhook，开始处理");
+            log.info("✅ Received event webhook, starting processing");
             messageProducer.sendEventMessage(payload);
             // String userId = payloadParserService.extractUserIdFromEventPayload(payload);
             // String eventId = payloadParserService.extractEventIdFromEventPayload(payload);
-            // boolean isRecurring = (graphService.getUserEvent(userId, eventId).recurrence!=null); // 示例判断
+            // boolean isRecurring = (graphService.getUserEvent(userId, eventId).recurrence!=null); // Example judgment
             // graphEventService.processEvent(userId, eventId, isRecurring);
 
             return ResponseEntity.ok("OK");
         } catch (Exception e) {
-            log.error("❌ 处理事件 webhook 失败: {}", e.getMessage(), e);
+            log.error("❌ Failed to process event webhook: {}", e.getMessage(), e);
             return ResponseEntity.badRequest().body("Failed");
         }
     }
@@ -63,22 +63,22 @@ public class WebhookController {
                                                         @RequestBody(required = false) String payload) {
         String token = request.getParameter("validationToken");
         if (token != null) {
-            log.info("✅ 收到 Graph 验证 POST 请求，返回 token: {}", token);
+            log.info("✅ Received Graph validation POST request, returning token: {}", token);
             return ResponseEntity.ok(token);
         }
 
         try {
-            log.info("✅ 收到 transcript webhook，开始处理");
+            log.info("✅ Received transcript webhook, starting processing");
 
             messageProducer.sendTranscriptMessage(payload);
             // TranscriptInfo transcriptInfo = payloadParserService.parseTranscriptInfo(payload);
-            //             // 自动关闭订阅
+            //             // Automatically close subscription
             // String subscriptionId = payloadParserService.extractSubscriptionId(payload);
 
 
             // if (subscriptionId != null) {
             //     graphService.deleteSubscription(subscriptionId);
-            //     log.info("✅ 已关闭订阅 ID: {}", subscriptionId);
+            //     log.info("✅ Closed subscription ID: {}", subscriptionId);
             // }
 
             // transcriptService.downloadTranscriptContent(
@@ -89,37 +89,37 @@ public class WebhookController {
             // );
             return ResponseEntity.ok("OK");
         } catch (Exception e) {
-            log.error("❌ 处理 transcript webhook 失败: {}", e.getMessage(), e);
+            log.error("❌ Failed to process transcript webhook: {}", e.getMessage(), e);
             return ResponseEntity.badRequest().body("Failed");
         }
     }
 
     
     /**
-     * 接收 Graph 生命周期通知的回调接口（lifecycleNotificationUrl）
+     * Callback interface for receiving Graph lifecycle notifications (lifecycleNotificationUrl)
      */
     @PostMapping("/teams-lifecycle")
     public ResponseEntity<String> handleLifecycleNotification(HttpServletRequest request,
                                                               @RequestBody(required = false) String payload) {
         String validationToken = request.getParameter("validationToken");
         if (validationToken != null) {
-            // Graph 验证流程，要求返回验证 token
-            log.info("✅ 收到 Graph 生命周期验证请求，返回 token: {}", validationToken);
+            // Graph validation process, requires returning validation token
+            log.info("✅ Received Graph lifecycle validation request, returning token: {}", validationToken);
             return ResponseEntity.ok(validationToken);
         }
 
-        // 没有 validationToken，就是生命周期事件通知（例如续订、异常提醒）
-        log.info("✅ 收到 Graph 生命周期事件通知，内容: {}", payload);
+        // No validationToken means lifecycle event notification (e.g., renewal, exception reminder)
+        log.info("✅ Received Graph lifecycle event notification, content: {}", payload);
 
-        // TODO: 这里可以解析 payload 并根据事件类型进行处理，例如自动续订订阅
-        // 例如根据 payload 中的 lifecycleEvent 字段判断
+        // TODO: Here you can parse payload and process according to event type, such as auto-renewal subscription
+        // For example, judge based on lifecycleEvent field in payload
         // {
         //   "lifecycleEvent": "reauthorizationRequired",
         //   "subscriptionId": "...",
         //   ...
         // }
         //
-        // 你可以调用后端服务重新调用订阅接口更新 expirationDateTime
+        // You can call backend service to re-call subscription interface to update expirationDateTime
 
         return ResponseEntity.ok("Received lifecycle event");
     }

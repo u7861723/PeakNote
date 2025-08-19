@@ -18,24 +18,24 @@ public class RabbitListenerConfig {
         SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
         factory.setConnectionFactory(connectionFactory);
 
-        // 这里配置并发消费者数量
-        factory.setConcurrentConsumers(3);      // 初始并发消费者数量，比如 3 个线程
-        factory.setMaxConcurrentConsumers(10);  // 最大并发消费者数量，比如最多 10 个线程
+        // Configure concurrent consumer count here
+        factory.setConcurrentConsumers(3);      // Initial concurrent consumer count, e.g., 3 threads
+        factory.setMaxConcurrentConsumers(10);  // Maximum concurrent consumer count, e.g., up to 10 threads
 
-        // 配置每个消费者一次最多预取多少条消息（可选）
+        // Configure how many messages each consumer can prefetch at once (optional)
         factory.setPrefetchCount(3);
 
-        // ✅ 配置重试拦截器
+        // ✅ Configure retry interceptor
         RetryOperationsInterceptor interceptor = RetryInterceptorBuilder
                 .stateless()
-                .maxAttempts(2)                        // 最大尝试次数（1次原始 + 2次重试）
-                .backOffOptions(10000, 2.0, 30000)    // 初始 10s，乘以 2，最大 30s
-                .recoverer(new RejectAndDontRequeueRecoverer()) // 重试结束后直接丢弃
+                .maxAttempts(2)                        // Maximum attempt count (1 original + 2 retries)
+                .backOffOptions(10000, 2.0, 30000)    // Initial 10s, multiply by 2, maximum 30s
+                .recoverer(new RejectAndDontRequeueRecoverer()) // Discard directly after retry ends
                 .build();
 
         factory.setAdviceChain(interceptor);
 
-        // ✅ 如果你要 JSON 消息，可以加上转换器
+        // ✅ If you want JSON messages, you can add a converter
         // factory.setMessageConverter(new Jackson2JsonMessageConverter());
 
         return factory;

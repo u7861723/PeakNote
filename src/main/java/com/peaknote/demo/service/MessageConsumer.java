@@ -31,49 +31,49 @@ public class MessageConsumer {
     @RabbitListener(queues = EVENT_QUEUE, containerFactory = "rabbitListenerContainerFactory")
     public void handleEventMessage(String payload) {
         try {
-            log.info("✅ 消费 Event 消息");
+            log.info("✅ Consuming Event message");
             String userId = payloadParserService.extractUserIdFromEventPayload(payload);
             String eventId = payloadParserService.extractEventIdFromEventPayload(payload);
             String type = payloadParserService.extractChangeType(payload);
             String key = eventId + ":" + type;
-            // Redis 去重
+            // Redis deduplication
             Boolean success = stringRedisTemplate.opsForValue().setIfAbsent(key, "1", 5, TimeUnit.MINUTES);
             if (Boolean.FALSE.equals(success)) {
-                log.warn("⚠️ 重复消息，已忽略: {}", key);
+                log.warn("⚠️ Duplicate message, ignored: {}", key);
                 return;
             }
             boolean isRecurring = (graphService.getUserEvent(userId, eventId).recurrence != null);
             graphEventService.processEvent(userId, eventId, isRecurring);
         } catch (Exception e) {
-            log.error("❌ 处理 Event 消息失败: {}", e.getMessage(), e);
+            log.error("❌ Failed to process Event message: {}", e.getMessage(), e);
         }
     }
 
     @RabbitListener(queues = TRANSCRIPT_QUEUE, containerFactory = "rabbitListenerContainerFactory")
     public void handleTranscriptMessage(String payload) {
         try {
-            log.info("✅ 消费 Transcript 消息");
+            log.info("✅ Consuming Transcript message");
             TranscriptInfo transcriptInfo = payloadParserService.parseTranscriptInfo(payload);
             String subscriptionId = payloadParserService.extractSubscriptionId(payload);
             String type = payloadParserService.extractChangeType(payload);
 
             String key = subscriptionId + ":" + type;
 
-            // Redis 去重
+            // Redis deduplication
             Boolean success = stringRedisTemplate.opsForValue().setIfAbsent(key, "1", 5, TimeUnit.MINUTES);
             if (Boolean.FALSE.equals(success)) {
-                log.warn("⚠️ 重复消息，已忽略: {}", key);
+                log.warn("⚠️ Duplicate message, ignored: {}", key);
                 return;
             }
 
             if (subscriptionId != null) {
                 graphService.deleteSubscription(subscriptionId);
-                log.info("✅ 已关闭订阅 ID: {}", subscriptionId);
+                log.info("✅ Closed subscription ID: {}", subscriptionId);
             }
 
             MeetingEvent meetingEvent = meetingEventRepository.findFirstByMeetingIdAndTranscriptStatus(transcriptInfo.getMeetingId(), "subscribed");
             if (meetingEvent == null) {
-                log.error("❌ 未找到对应会议事件，eventId={}", transcriptInfo.getMeetingId());
+                log.error("❌ Meeting event not found, eventId={}", transcriptInfo.getMeetingId());
                 return;
             }
 
@@ -88,7 +88,7 @@ public class MessageConsumer {
 
 
         } catch (Exception e) {
-            log.error("❌ 处理 Transcript 消息失败: {}", e.getMessage(), e);
+            log.error("❌ Failed to process Transcript message: {}", e.getMessage(), e);
         }
     }
 }

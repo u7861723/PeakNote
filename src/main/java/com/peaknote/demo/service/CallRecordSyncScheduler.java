@@ -21,29 +21,29 @@
 //         this.graphClient = graphClient;
 //     }
 
-//     @Scheduled(fixedRate = 600000) // 每 10 分钟执行
+    //     @Scheduled(fixedRate = 600000) // Execute every 10 minutes
 // public void syncCallRecords() {
 //     try {
-//         System.out.println("🚀 开始同步 call records...");
+//         System.out.println("🚀 Starting to sync call records...");
 
 //         String startTime = Instant.now().minus(29, ChronoUnit.DAYS).toString();
 //         // String url = "/communications/callRecords?$filter=startDateTime ge " + startTime;
 //         String url = "/communications/callRecords";
-//         // 注意这里返回可能为 null，要检查
+//         // Note: return may be null, need to check
 //         String jsonResponse = graphClient
 //                 .customRequest(url, String.class)
 //                 .buildRequest()
 //                 .get();
 
 //         if (jsonResponse == null || jsonResponse.isEmpty()) {
-//     System.out.println("⚠️ 响应为空，打印确认 jsonResponse = " + jsonResponse);
+//     System.out.println("⚠️ Response is empty, printing confirmation jsonResponse = " + jsonResponse);
 //     return;
 // }
-// System.out.println("📄 原始 JSON 响应: " + jsonResponse);
+// System.out.println("📄 Original JSON response: " + jsonResponse);
 
 // JsonNode root = objectMapper.readTree(jsonResponse);
 // if (!root.has("@odata.context")) {
-//     System.out.println("⚠️ 响应无 @odata.context，可能请求异常或非 Graph 返回");
+//     System.out.println("⚠️ Response has no @odata.context, request may be abnormal or not Graph return");
 //     return;
 // }
 
@@ -53,15 +53,15 @@
 //         String id = record.get("id").asText();
 //         String start = record.get("startDateTime").asText();
 //         String end = record.get("endDateTime").asText();
-//         System.out.println("✅ CallRecord ID: " + id + " - 开始: " + start + " - 结束: " + end);
+//         System.out.println("✅ CallRecord ID: " + id + " - Start: " + start + " - End: " + end);
 //     }
 // } else {
-//     System.out.println("⚠️ 请求正常，但没有 call record 数据");
+//     System.out.println("⚠️ Request is normal, but no call record data");
 // }
 
 
 //     } catch (Exception e) {
-//         System.err.println("❌ 同步 call records 出错: " + e.getMessage());
+//         System.err.println("❌ Error syncing call records: " + e.getMessage());
 //         e.printStackTrace();
 //     }
 // }

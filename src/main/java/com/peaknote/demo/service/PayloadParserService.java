@@ -14,14 +14,14 @@ public class PayloadParserService {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
-     * 解析 transcript webhook payload，返回封装好的 TranscriptInfo
+     * Parse transcript webhook payload, return encapsulated TranscriptInfo
      */
     public TranscriptInfo parseTranscriptInfo(String payload) throws Exception {
         JsonNode root = objectMapper.readTree(payload);
         JsonNode valueNode = root.get("value").get(0);
         String resource = valueNode.get("resource").asText();
 
-        // resource 示例：users('userId')/onlineMeetings('meetingId')/transcripts('transcriptId')
+        // resource example: users('userId')/onlineMeetings('meetingId')/transcripts('transcriptId')
         String cleaned = resource.replace("users('", "")
                 .replace("')/onlineMeetings('", ",")
                 .replace("')/transcripts('", ",")
@@ -33,36 +33,36 @@ public class PayloadParserService {
             String userId = parts[0];
             String meetingId = parts[1];
             String transcriptId = parts[2];
-            log.info("✅ 成功解析 transcript payload，userId={}, meetingId={}, transcriptId={}", userId, meetingId, transcriptId);
+            log.info("✅ Successfully parsed transcript payload, userId={}, meetingId={}, transcriptId={}", userId, meetingId, transcriptId);
             return new TranscriptInfo(userId, meetingId, transcriptId);
         } else {
-            log.error("❌ 无法解析 transcript resource 格式，原始 resource: {}", resource);
+            log.error("❌ Unable to parse transcript resource format, original resource: {}", resource);
             throw new RuntimeException("Invalid transcript resource format: " + resource);
         }
     }
 
     /**
-     * 提取用户 ID（针对事件 webhook）
+     * Extract user ID (for event webhook)
      */
     public String extractUserIdFromEventPayload(String payload) throws Exception {
         JsonNode root = objectMapper.readTree(payload);
         JsonNode valueNode = root.get("value").get(0);
         String resource = valueNode.get("resource").asText();
 
-        // 示例 resource: Users/{userId}/Events/{eventId}
+        // Example resource: Users/{userId}/Events/{eventId}
         String[] parts = resource.split("/");
         if (parts.length >= 2) {
             String userId = parts[1];
-            log.info("✅ 成功解析 event payload，userId={}", userId);
+            log.info("✅ Successfully parsed event payload, userId={}", userId);
             return userId;
         } else {
-            log.error("❌ 无法解析事件 resource 格式，原始 resource: {}", resource);
+            log.error("❌ Unable to parse event resource format, original resource: {}", resource);
             throw new RuntimeException("Invalid event resource format: " + resource);
         }
     }
 
     /**
-     * 提取事件 ID（针对事件 webhook）
+     * Extract event ID (for event webhook)
      */
     public String extractEventIdFromEventPayload(String payload) throws Exception {
         JsonNode root = objectMapper.readTree(payload);
@@ -71,10 +71,10 @@ public class PayloadParserService {
 
         if (resourceData != null && resourceData.has("id")) {
             String eventId = resourceData.get("id").asText();
-            log.info("✅ 成功解析 event payload，eventId={}", eventId);
+            log.info("✅ Successfully parsed event payload, eventId={}", eventId);
             return eventId;
         } else {
-            log.error("❌ 无法在 resourceData 中找到 id 字段");
+            log.error("❌ Unable to find id field in resourceData");
             throw new RuntimeException("Event payload missing id in resourceData");
         }
     }
@@ -86,7 +86,7 @@ public class PayloadParserService {
         if (valueNode.has("subscriptionId")) {
             return valueNode.get("subscriptionId").asText();
         } else {
-            log.warn("⚠️ webhook payload 不包含 subscriptionId");
+            log.warn("⚠️ Webhook payload does not contain subscriptionId");
             return null;
         }
     }
@@ -100,7 +100,7 @@ public class PayloadParserService {
                 return first.get("changeType").asText();
             }
         } catch (Exception e) {
-            throw new RuntimeException("解析 changeType 失败", e);
+            throw new RuntimeException("Failed to parse changeType", e);
         }
         return null;
     }
