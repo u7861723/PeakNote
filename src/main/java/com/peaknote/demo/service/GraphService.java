@@ -84,7 +84,8 @@ public class GraphService {
         try {
             if (userId == null || userId.trim().isEmpty() || eventId == null || eventId.trim().isEmpty()) {
                 throw new IllegalArgumentException("User ID and Event ID cannot be empty");
-            }
+            ErrorHandler.validateNotEmpty(userId, "User ID");
+            ErrorHandler.validateNotEmpty(eventId, "Event ID");
             
             return webhookGraphClient
                     .users(userId)
