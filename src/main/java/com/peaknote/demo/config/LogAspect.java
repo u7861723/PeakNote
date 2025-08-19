@@ -15,49 +15,49 @@ import java.util.Arrays;
 public class LogAspect {
 
     /**
-     * 定义切入点（匹配所有 service 包下的所有 public 方法）
+     * Define pointcut (matches all public methods in all service packages)
      */
     @Pointcut("execution(public * com.peaknote.demo.service..*(..)) || execution(public * com.peaknote.demo.controller..*(..))")
     public void serviceLog() {}
 
     /**
-     * 方法执行前
+     * Before method execution
      */
     @Before("serviceLog()")
     public void doBefore(JoinPoint joinPoint) {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-        log.info("➡️ 开始执行: {}.{}(), 参数: {}", 
+        log.info("➡️ Starting execution: {}.{}(), parameters: {}", 
             signature.getDeclaringTypeName(),
             signature.getName(),
             Arrays.toString(joinPoint.getArgs()));
     }
 
     /**
-     * 方法执行后
+     * After method execution
      */
     @AfterReturning(value = "serviceLog()", returning = "result")
     public void doAfterReturning(JoinPoint joinPoint, Object result) {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-        log.info("✅ 执行完成: {}.{}(), 返回: {}", 
+        log.info("✅ Execution completed: {}.{}(), return: {}", 
             signature.getDeclaringTypeName(),
             signature.getName(),
             result);
     }
 
     /**
-     * 方法抛异常
+     * Method throws exception
      */
     @AfterThrowing(value = "serviceLog()", throwing = "e")
     public void doAfterThrowing(JoinPoint joinPoint, Throwable e) {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-        log.error("❌ 异常: {}.{}(), 异常信息: {}", 
+        log.error("❌ Exception: {}.{}(), exception info: {}", 
             signature.getDeclaringTypeName(),
             signature.getName(),
             e.getMessage(), e);
     }
 
     /**
-     * 方法执行耗时（可选增强）
+     * Method execution time (optional enhancement)
      */
     @Around("serviceLog()")
     public Object doAround(ProceedingJoinPoint joinPoint) throws Throwable {
@@ -65,7 +65,7 @@ public class LogAspect {
         Object result = joinPoint.proceed();
         long time = System.currentTimeMillis() - start;
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-        log.info("⏱️ 耗时: {}.{}(), 执行时间: {} ms", 
+        log.info("⏱️ Time taken: {}.{}(), execution time: {} ms", 
             signature.getDeclaringTypeName(),
             signature.getName(),
             time);

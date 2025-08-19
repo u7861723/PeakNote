@@ -69,7 +69,7 @@ public class GraphClientConfig {
 //         TokenRequestContext requestContext = new TokenRequestContext()
 //                 .addScopes("https://graph.microsoft.com/.default");
 
-//         // 注意这里要 block() 等待
+        //         // Note: block() is required here to wait
 //         AccessToken accessToken = credential.getToken(requestContext).block();
 //         return accessToken.getToken();
 //     }

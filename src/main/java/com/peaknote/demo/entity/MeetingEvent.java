@@ -22,7 +22,7 @@ public class MeetingEvent {
     private String meetingId;
     private Instant lastNotifiedAt;
     @Column(name = "transcript_status")
-    private String transcriptStatus = "none"; // 默认 none
+    private String transcriptStatus = "none"; // Default none
 
     @OneToMany(mappedBy = "meetingEvent")
     private List<MeetingAttendee> attendees;

@@ -14,8 +14,8 @@ public class ThreadPoolConfig {
         executor.setQueueCapacity(20);
         executor.setThreadNamePrefix("transcript-pool-");
 
-        executor.setKeepAliveSeconds(60); // 设置空闲销毁时间（非核心线程）
-        // executor.setAllowCoreThreadTimeOut(true); // 可选，如果希望核心线程也回收
+        executor.setKeepAliveSeconds(60); // Set idle destruction time (non-core threads)
+        // executor.setAllowCoreThreadTimeOut(true); // Optional, if you want core threads to be recycled too
 
         executor.initialize();
         return executor;

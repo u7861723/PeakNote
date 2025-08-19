@@ -17,17 +17,17 @@ public class SubscriptionRenewalScheduler {
     private final GraphUserSubscriptionRepository subscriptionRepository;
     private final GraphService graphService;
 
-    @Scheduled(cron = "0 0 2 * * ?") // 每天凌晨 2 点执行
+    @Scheduled(cron = "0 0 2 * * ?") // Execute daily at 2:00 AM
     public void renewSubscriptions() {
         List<GraphUserSubscription> subscriptions = subscriptionRepository.findAll();
 
         for (GraphUserSubscription sub : subscriptions) {
-            // 检查距离过期时间是否小于 25 小时
+            // Check if time to expiration is less than 25 hours
             if (sub.getExpirationDateTime().isBefore(OffsetDateTime.now().plusHours(25))) {
-                // 续订逻辑
-                OffsetDateTime newExpire = OffsetDateTime.now().plusDays(3); // 例如续订三天
+                // Renewal logic
+                OffsetDateTime newExpire = OffsetDateTime.now().plusDays(3); // For example, renew for 3 days
                 graphService.renewSubscription(sub.getId(),newExpire);
-                // 这里你也可以更新数据库里的 expirationDateTime
+                // Here you can also update the expirationDateTime in the database
                 sub.setExpirationDateTime(newExpire);
                 subscriptionRepository.save(sub);
             }

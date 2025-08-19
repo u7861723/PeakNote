@@ -59,7 +59,7 @@ public class MeetingSummaryService {
 
 
 
-        // Spring AI 1.0.0 新写法，链式
+        // Spring AI 1.0.0 new syntax, chained
         return chatClient
                 .prompt(prompt)
                 .user(transcriptContent)

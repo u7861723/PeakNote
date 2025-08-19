@@ -22,12 +22,12 @@ public class CacheConfig {
     @Bean
     public CacheManager cacheManager(RedisConnectionFactory factory) {
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMinutes(10)) // 默认 TTL
+                .entryTtl(Duration.ofMinutes(10)) // Default TTL
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
-                //.disableCachingNullValues(); // 如果想缓存 null 可以改 true
+                //.disableCachingNullValues(); // If you want to cache null, change to true
 
-        // 给指定缓存加随机 TTL
+        // Add random TTL for specified cache
         return RedisCacheManager.builder(factory)
                 .cacheDefaults(config)
                 .withCacheConfiguration("transcriptCache",

@@ -120,8 +120,8 @@ public class GraphService {
         }
     }
 
-    //获取系列会议的每个实例
-        public EventCollectionPage getEventOccurrences(String userId, String seriesMasterId, String startDateTime, String endDateTime) {
+    // Get each instance of a series meeting
+    public EventCollectionPage getEventOccurrences(String userId, String seriesMasterId, String startDateTime, String endDateTime) {
         return webhookGraphClient
                 .users(userId)
                 .events(seriesMasterId)
@@ -133,7 +133,7 @@ public class GraphService {
                 .get();
     }
 
-        //创建对Event的订阅
+        // Create subscription for Event
         public Subscription createEventSubscription(String userId, String notificationUrl, String clientState, OffsetDateTime expireTime) {
         Subscription subscription = new Subscription();
         subscription.changeType = "created";
@@ -147,7 +147,7 @@ public class GraphService {
                 .post(subscription);
     }
 
-    //创建对Transcript的订阅
+    // Create subscription for Transcript
     public Subscription createTranscriptSubscription(String meetingId, String notificationUrl, String clientState, OffsetDateTime expireTime) {
         Subscription subscription = new Subscription();
         subscription.changeType = "created";
@@ -163,7 +163,7 @@ public class GraphService {
     }
 
         /**
-     * 列出所有订阅
+     * List all subscriptions
      */
     public SubscriptionCollectionPage listAllSubscriptions() {
         return webhookGraphClient.subscriptions()
@@ -172,7 +172,7 @@ public class GraphService {
     }
 
     /**
-     * 删除指定订阅
+     * Delete specified subscription
      */
     public void deleteSubscription(String subscriptionId) {
         webhookGraphClient.subscriptions(subscriptionId)
@@ -180,7 +180,7 @@ public class GraphService {
                 .delete();
     }
 
-    //续订订阅
+    // Renew subscription
     public Subscription renewSubscription(String subscriptionId, OffsetDateTime newExpiration) {
         Subscription subscription = new Subscription();
         subscription.expirationDateTime = newExpiration;
@@ -205,12 +205,12 @@ public class GraphService {
 }
 
 public void getAttendees(MeetingEvent meetingEvent, String userId, String meetingId) throws JsonProcessingException {
-    // 构造获取 attendanceReports 列表的 URL
+    // Construct URL to get attendanceReports list
     String reportsUrl = String.format(
             "/users/%s/onlineMeetings/%s/attendanceReports",
             userId, meetingId);
 
-    // 先获取 attendanceReports 列表
+    // First get the attendanceReports list
     Map reportsResponse = graphClient
             .customRequest(reportsUrl, Map.class)
             .buildRequest()
@@ -218,18 +218,18 @@ public void getAttendees(MeetingEvent meetingEvent, String userId, String meetin
 
     List<Map<String, Object>> reports = (List<Map<String, Object>>) reportsResponse.get("value");
     if (reports == null || reports.isEmpty()) {
-        throw new IllegalStateException("未找到任何 attendanceReports，会议可能未生成报告");
+        throw new IllegalStateException("No attendanceReports found, meeting may not have generated reports");
     }
 
-    // 只取第一个 report（也可以循环多个）
+    // Only take the first report (can also loop through multiple)
     String reportId = (String) reports.get(0).get("id");
 
-    // 构造获取详细 report（带参会人员）的 URL，带上 $expand
+    // Construct URL to get detailed report (with attendees) using $expand
     String detailUrl = String.format(
             "/users/%s/onlineMeetings/%s/attendanceReports/%s?$expand=attendanceRecords",
             userId, meetingId, reportId);
 
-    // 获取参会人员详情
+    // Get attendee details
     Object detailResponse = graphClient
             .customRequest(detailUrl, Object.class)
             .buildRequest()
@@ -248,7 +248,7 @@ public void getAttendees(MeetingEvent meetingEvent, String userId, String meetin
         attendee.setMeetingEvent(meetingEvent);
         meetingAttendeeRepository.save(attendee);
     }
-    System.out.println("参会详情 JSON：\n" + json);
+    System.out.println("Attendee details JSON:\n" + json);
     }
 }
 

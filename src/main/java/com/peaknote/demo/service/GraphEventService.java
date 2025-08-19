@@ -44,7 +44,7 @@ public class GraphEventService {
         EventCollectionPage occurrences = graphService.getEventOccurrences(userId, seriesMasterId, startDateTime, endDateTime);
 
         if (occurrences.getCurrentPage().isEmpty()) {
-            System.out.println("✅ 没有 occurrence（可能太早）");
+            System.out.println("✅ No occurrence (possibly too early)");
             return;
         }
 
@@ -62,7 +62,7 @@ public class GraphEventService {
         entity.setStartTime(parseGraphDateTime(event.start.dateTime));
         entity.setEndTime(parseGraphDateTime(event.end.dateTime));
 
-            // 判断是否为当天的会议
+            // Check if it's a meeting on the current day
         boolean isToday = entity.getStartTime()
             .atZone(ZoneOffset.systemDefault())
             .toLocalDate()

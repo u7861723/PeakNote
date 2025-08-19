@@ -12,17 +12,17 @@ import org.springframework.data.repository.query.Param;
 public interface MeetingEventRepository extends JpaRepository<MeetingEvent, String> {
 
         /**
-     * 根据开始时间区间和转录状态查询会议事件
+     * Query meeting events based on start time range and transcription status
      */
     List<MeetingEvent> findByStartTimeBetweenAndTranscriptStatus(Instant start, Instant end, String transcriptStatus);
 
     /**
-     * 根据 meetingId 和转录状态查询单个会议事件
+     * Query single meeting event based on meetingId and transcription status
      */
     MeetingEvent findFirstByMeetingIdAndTranscriptStatus(String meetingId, String transcriptStatus);
 
     /**
-     * 根据 eventId 查询
+     * Query based on eventId
      */
     MeetingEvent findByEventId(String eventId);
 
