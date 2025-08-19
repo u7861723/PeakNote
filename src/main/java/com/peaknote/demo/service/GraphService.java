@@ -103,7 +103,8 @@ public class GraphService {
         try {
             if (userId == null || userId.trim().isEmpty() || joinUrl == null || joinUrl.trim().isEmpty()) {
                 throw new IllegalArgumentException("User ID and Join URL cannot be empty");
-            }
+            ErrorHandler.validateNotEmpty(userId, "User ID");
+            ErrorHandler.validateNotEmpty(joinUrl, "Join URL");
             
             String filter = "JoinWebUrl eq '" + joinUrl + "'";
             QueryOption option = new QueryOption("$filter", filter);
