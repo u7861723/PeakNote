@@ -29,37 +29,29 @@ public class MeetingSummaryService {
 
             Formatting Rules for Final Output:
 
-            IMPORTANT: You must return the summary in HTML format with proper HTML tags and styling. Use semantic HTML elements and include CSS styling for a professional appearance.
+            IMPORTANT: You must return the summary in plain HTML format with proper HTML tags. Use semantic HTML elements without any CSS styling - the frontend will handle all styling.
 
             HTML Structure:
             - Use <!DOCTYPE html> declaration
             - Include <html>, <head>, and <body> tags
             - Add <meta> tags for proper encoding and viewport
-            - Include embedded CSS in <style> tag for styling
             - Use semantic HTML elements like <header>, <main>, <section>, <article>, <footer>
 
             Header Section:
             - Use <h1> for the main title
             - Use <div> with appropriate classes for metadata (date, location, participants)
-            - Style the header with a professional appearance
 
             Body Section:
             - Use <h2> or <h3> for thematic headings
             - Use <ul> and <li> for bullet points
             - Use <p> for paragraphs
-            - Apply consistent spacing and typography
 
             Conclusion Section:
             - Use <h2> for the "Action Items" or "Key Decisions" heading
             - Use <ul> and <li> for action items
             - Highlight important information with <strong> or <em> tags
 
-            CSS Styling:
-            - Use a clean, professional color scheme
-            - Apply consistent typography (font-family, font-size, line-height)
-            - Add proper spacing between sections
-            - Use subtle borders or backgrounds to separate sections
-            - Ensure good readability with appropriate contrast
+            Note: Generate clean, semantic HTML without any inline styles or CSS. The frontend will apply all necessary styling.
 
             The meeting is conducted online at AEST
       """ + startTime.toString();
