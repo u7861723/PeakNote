@@ -1,5 +1,6 @@
 package com.peaknote.demo.service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -17,6 +18,9 @@ public class MailService {
 
     @Autowired
     private JavaMailSender mailSender;
+
+    @Value("${spring.mail.username}")
+    private String senderEmail;
 
     public void forwardHtmlAsPdf(String htmlContent, List<String> recipients) throws Exception {
         System.out.println("Starting HTML to PDF conversion request, recipient count: " + recipients.size());
@@ -43,7 +47,7 @@ public class MailService {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-        helper.setFrom("jerry527ztx@gmail.com");
+        helper.setFrom(senderEmail);
         helper.setTo(recipients.toArray(new String[0])); // Multiple recipients
         System.out.println("recipients:"+recipients);
         helper.setSubject("Meeting Minutes Forward");
