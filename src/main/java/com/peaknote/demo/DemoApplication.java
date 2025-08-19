@@ -30,16 +30,24 @@ public class DemoApplication {
 
 	@EventListener(ApplicationReadyEvent.class)
 	public void runAfterStartup() throws InterruptedException {
-	System.out.println("🟡 Starting user sync...");
-	teamsUserSyncService.syncUsers();
-	System.out.println("✅ User sync complete.");
-	
-	System.out.println("🟡 删除之前的订阅");
-	subscriptionService.listAndDeleteAllSubscriptions();
-    System.out.println("🟡 正在为所有用户注册订阅...");
-    subscriptionService.createSubscriptionsForAllUsers();
-    System.out.println("✅ 订阅注册完成，等待 Graph 推送通知");
-}
+		try {
+			System.out.println("🟡 Starting user sync...");
+			teamsUserSyncService.syncUsers();
+			System.out.println("✅ User sync complete.");
+			
+			System.out.println("🟡 Deleting previous subscriptions...");
+			subscriptionService.listAndDeleteAllSubscriptions();
+			System.out.println("✅ Previous subscriptions deleted.");
+			
+			System.out.println("🟡 Registering subscriptions for all users...");
+			subscriptionService.createSubscriptionsForAllUsers();
+			System.out.println("✅ Subscription registration complete, waiting for Graph push notifications");
+		} catch (Exception e) {
+			System.err.println("❌ Application startup initialization failed: " + e.getMessage());
+			e.printStackTrace();
+			// Log error but don't interrupt application startup
+		}
+	}
 
 
     public static void main(String[] args) {

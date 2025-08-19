@@ -28,7 +28,7 @@ public class MeetingEventSchedulerService {
     }
 
     /**
-     * 每天01：00执行
+     * Execute daily at 01:00
      */
     @Scheduled(cron = "0 0 1 * * ?")
     public void subscribeRecentMeetings() {
@@ -36,25 +36,25 @@ public class MeetingEventSchedulerService {
         OffsetDateTime startOfDay = today.atStartOfDay(ZoneOffset.systemDefault()).toOffsetDateTime();
         OffsetDateTime endOfDay = today.atTime(LocalTime.MAX).atZone(ZoneOffset.systemDefault()).toOffsetDateTime();
 
-                List<MeetingEvent> events = meetingEventRepository.findByStartTimeBetweenAndTranscriptStatus(
+        List<MeetingEvent> events = meetingEventRepository.findByStartTimeBetweenAndTranscriptStatus(
                 startOfDay.toInstant(), endOfDay.toInstant(), "none"
         );
 
         if (events.isEmpty()) {
-            log.info("✅ 最近 5 分钟没有会议需要订阅 transcript");
+            log.info("✅ No meetings in the last 5 minutes need transcript subscription");
             return;
         }
 
         for (MeetingEvent event : events) {
             try {
-                log.info("📄 为会议创建 transcript 订阅: eventId={}, meetingId={}", event.getEventId(), event.getMeetingId());
+                log.info("📄 Creating transcript subscription for meeting: eventId={}, meetingId={}", event.getEventId(), event.getMeetingId());
                 subscriptionService.createTranscriptSubscription(event.getMeetingId());
 
                 event.setTranscriptStatus("subscribed");
                 meetingEventRepository.save(event);
-                log.info("✅ 已更新会议 {} 状态为 subscribed", event.getEventId());
+                log.info("✅ Meeting {} status updated to subscribed", event.getEventId());
             } catch (Exception e) {
-                log.error("❌ 为会议 {} 创建订阅失败: {}", event.getEventId(), e.getMessage(), e);
+                log.error("❌ Failed to create subscription for meeting {}: {}", event.getEventId(), e.getMessage(), e);
             }
         }
     }

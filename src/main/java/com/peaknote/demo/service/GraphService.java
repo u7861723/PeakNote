@@ -57,41 +57,67 @@ public class GraphService {
         this.meetingAttendeeRepository = meetingAttendeeRepository;
     }
 
-    //获取所有租户用户
+    // Fetch all tenant users
     public List<User> fetchAllUsers() {
-        List<User> result = new ArrayList<>();
-        var page = graphClient.users()
-                .buildRequest()
-                .select("id,mail,userPrincipalName")
-                .top(50)
-                .get();
+        try {
+            List<User> result = new ArrayList<>();
+            var page = graphClient.users()
+                    .buildRequest()
+                    .select("id,mail,userPrincipalName")
+                    .top(50)
+                    .get();
 
-        while (page != null) {
-            result.addAll(page.getCurrentPage());
-            page = page.getNextPage() != null ? page.getNextPage().buildRequest().get() : null;
+            while (page != null) {
+                result.addAll(page.getCurrentPage());
+                page = page.getNextPage() != null ? page.getNextPage().buildRequest().get() : null;
+            }
+            return result;
+        } catch (Exception e) {
+            System.err.println("❌ Failed to fetch user list: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to fetch user list", e);
         }
-        return result;
     }
 
-    //获取某个用户的单个事件
-        public Event getUserEvent(String userId, String eventId) {
-        return webhookGraphClient
-                .users(userId)
-                .events(eventId)
-                .buildRequest()
-                .get();
+    // Get a single event for a specific user
+    public Event getUserEvent(String userId, String eventId) {
+        try {
+            if (userId == null || userId.trim().isEmpty() || eventId == null || eventId.trim().isEmpty()) {
+                throw new IllegalArgumentException("User ID and Event ID cannot be empty");
+            }
+            
+            return webhookGraphClient
+                    .users(userId)
+                    .events(eventId)
+                    .buildRequest()
+                    .get();
+        } catch (Exception e) {
+            System.err.println("❌ Failed to get user event: userId=" + userId + ", eventId=" + eventId + ", error=" + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to get user event", e);
+        }
     }
 
-    //根据joinUrl查询OnlineMeting
-        public OnlineMeetingCollectionPage getOnlineMeetingsByJoinUrl(String userId, String joinUrl) {
-        String filter = "JoinWebUrl eq '" + joinUrl + "'";
-        QueryOption option = new QueryOption("$filter", filter);
+    // Query OnlineMeeting by joinUrl
+    public OnlineMeetingCollectionPage getOnlineMeetingsByJoinUrl(String userId, String joinUrl) {
+        try {
+            if (userId == null || userId.trim().isEmpty() || joinUrl == null || joinUrl.trim().isEmpty()) {
+                throw new IllegalArgumentException("User ID and Join URL cannot be empty");
+            }
+            
+            String filter = "JoinWebUrl eq '" + joinUrl + "'";
+            QueryOption option = new QueryOption("$filter", filter);
 
-        return graphClient
-                .users(userId)
-                .onlineMeetings()
-                .buildRequest(Collections.singletonList(option))
-                .get();
+            return graphClient
+                    .users(userId)
+                    .onlineMeetings()
+                    .buildRequest(Collections.singletonList(option))
+                    .get();
+        } catch (Exception e) {
+            System.err.println("❌ Failed to query online meeting by URL: userId=" + userId + ", joinUrl=" + joinUrl + ", error=" + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to query online meeting", e);
+        }
     }
 
     //获取系列会议的每个实例
