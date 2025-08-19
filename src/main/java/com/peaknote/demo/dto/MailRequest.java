@@ -3,7 +3,7 @@ package com.peaknote.demo.dto;
 import java.util.List;
 
 /**
- * 邮件请求DTO
+ * Mail request DTO
  */
 public class MailRequest {
     private String htmlContent;
