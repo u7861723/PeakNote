@@ -33,6 +33,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import com.peaknote.demo.util.ErrorHandler;
+import com.peaknote.demo.exception.PeakNoteException;
 
 @Service
 public class GraphService {
@@ -83,7 +85,7 @@ public class GraphService {
     public Event getUserEvent(String userId, String eventId) {
         try {
             if (userId == null || userId.trim().isEmpty() || eventId == null || eventId.trim().isEmpty()) {
-                throw new IllegalArgumentException("User ID and Event ID cannot be empty");
+                throw new IllegalArgumentException("User ID and Event ID cannot be empty");}
             ErrorHandler.validateNotEmpty(userId, "User ID");
             ErrorHandler.validateNotEmpty(eventId, "Event ID");
             
@@ -92,7 +94,7 @@ public class GraphService {
                     .events(eventId)
                     .buildRequest()
                     .get();
-        } catch (Exception e) {
+         }catch (Exception e) {
             System.err.println("❌ Failed to get user event: userId=" + userId + ", eventId=" + eventId + ", error=" + e.getMessage());
             e.printStackTrace();
             throw new RuntimeException("Failed to get user event", e);
@@ -103,7 +105,7 @@ public class GraphService {
     public OnlineMeetingCollectionPage getOnlineMeetingsByJoinUrl(String userId, String joinUrl) {
         try {
             if (userId == null || userId.trim().isEmpty() || joinUrl == null || joinUrl.trim().isEmpty()) {
-                throw new IllegalArgumentException("User ID and Join URL cannot be empty");
+                throw new IllegalArgumentException("User ID and Join URL cannot be empty");}
             ErrorHandler.validateNotEmpty(userId, "User ID");
             ErrorHandler.validateNotEmpty(joinUrl, "Join URL");
             

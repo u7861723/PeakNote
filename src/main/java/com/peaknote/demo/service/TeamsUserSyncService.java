@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.peaknote.demo.entity.TeamsUser;
 import com.peaknote.demo.repository.UserRepository;
 import com.microsoft.graph.models.User;
+import com.peaknote.demo.exception.PeakNoteException;
 
 @Service
 public class TeamsUserSyncService {
