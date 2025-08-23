@@ -59,7 +59,7 @@ public class SubscriptionService {
         try {
             // subscription.changeType = "created,updated,deleted";
             String notificationUrl = webhookUrl + "webhook/notification";
-            OffsetDateTime expireTime = OffsetDateTime.now().plusHours(24);
+            OffsetDateTime expireTime = OffsetDateTime.now().plusHours(72);
             String clientState = "yourCustomState";
             Subscription created = graphService.createEventSubscription(userId, notificationUrl, clientState, expireTime);
 
@@ -128,7 +128,7 @@ public class SubscriptionService {
     // Add subscription for transcript
     public void createTranscriptSubscription(String meetingId) {
         try {
-            OffsetDateTime expireTime = OffsetDateTime.now().plusHours(8);
+            OffsetDateTime expireTime = OffsetDateTime.now().plusHours(23);
             String clientState = UUID.randomUUID().toString();
             String notificationUrl = webhookUrl + "webhook/teams-transcript"; // ✅ Modify to your own callback address
 
