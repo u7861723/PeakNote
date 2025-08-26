@@ -39,6 +39,8 @@ PeakNote is a comprehensive meeting intelligence platform that integrates with M
                        │   (MySQL)       │
                        └─────────────────┘
 ```
+![Uploading Blank diagram.jpeg…]()
+
 
 ### Technology Stack
 - **Framework**: Spring Boot 3.4.4
