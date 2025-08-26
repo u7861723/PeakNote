@@ -6,7 +6,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import com.peaknote.demo.service.SubscriptionService;
 import com.peaknote.demo.service.TeamsUserSyncService;
-
+import com.peaknote.demo.service.MeetingInstanceSyncService;
 //import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
 
@@ -17,7 +17,7 @@ public class DemoApplication {
 	private final SubscriptionService subscriptionService;
 
 	private final TeamsUserSyncService teamsUserSyncService;
-	// private final MeetingInstanceSyncService meetingInstanceSyncService;
+	//private final MeetingInstanceSyncService meetingInstanceSyncService;
 
 	// public DemoApplication(TeamsUserSyncService teamsUserSyncService,MeetingInstanceSyncService meetingInstanceSyncService) {
 	// 	this.teamsUserSyncService = teamsUserSyncService;
@@ -26,6 +26,7 @@ public class DemoApplication {
 	public DemoApplication(SubscriptionService subscriptionService, TeamsUserSyncService teamsUserSyncService){
 		this.teamsUserSyncService = teamsUserSyncService;
 		this.subscriptionService = subscriptionService;
+		//this.meetingInstanceSyncService = meetingInstanceSyncService;
 	}
 
 	@EventListener(ApplicationReadyEvent.class)
@@ -42,6 +43,8 @@ public class DemoApplication {
 			System.out.println("🟡 Registering subscriptions for all users...");
 			subscriptionService.createSubscriptionsForAllUsers();
 			System.out.println("✅ Subscription registration complete, waiting for Graph push notifications");
+			// meetingInstanceSyncService.syncNextWeekMeetings();
+			// System.out.println("✅ Meeting instance sync complete.");
 		} catch (Exception e) {
 			System.err.println("❌ Application startup initialization failed: " + e.getMessage());
 			e.printStackTrace();
