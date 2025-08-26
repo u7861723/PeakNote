@@ -17,7 +17,7 @@ public class MeetingSummaryService {
 
     public String generateSummary(Instant startTime,String transcriptContent) {
       String prompt = """
-            You are an expert AI assistant specializing in intelligent meeting summarization. Your primary task is to analyze a provided meeting transcript to understand its core purpose, tone, and content flow. Based on this analysis, you will design and populate a summary template that is perfectly suited to the specific conversation.  
+            You are an expert AI assistant specializing in intelligent meeting summarization. Your primary task is to analyze a provided meeting transcript to understand its core purpose, tone, and content flow. Based on this analysis, you will design and populate a summary template that is perfectly suited to the specific conversation. 
 
             Process:
 
@@ -29,32 +29,32 @@ public class MeetingSummaryService {
 
             Formatting Rules for Final Output:
 
-            Header: The summary must begin with the essential metadata, presented cleanly without redundant labels (e.g., do not write "Meeting Title:", just present the title itself). The format should be:
+            IMPORTANT: You must return the summary in plain HTML format with proper HTML tags. Use semantic HTML elements without any CSS styling - the frontend will handle all styling.
 
-            An insightful and concise title that captures the essence of the meeting.
+            HTML Structure:
+            - Use <!DOCTYPE html> declaration
+            - Include <html>, <head>, and <body> tags
+            - Add <meta> tags for proper encoding and viewport
+            - Use semantic HTML elements like <header>, <main>, <section>, <article>, <footer>
 
-            Date: [Date of Meeting] | Location: [Location of Meeting]
+            Header Section:
+            - Use <h1> for the main title
+            - Use <div> with appropriate classes for metadata (date, location, participants)
 
-            Participants: [Comma-separated list of participant names or roles]
+            Body Section:
+            - Use <h2> or <h3> for thematic headings
+            - Use <ul> and <li> for bullet points
+            - Use <p> for paragraphs
 
-            Absent: [List of anyone noted as absent, if mentioned]
+            Conclusion Section:
+            - Use <h2> for the "Action Items" or "Key Decisions" heading
+            - Use <ul> and <li> for action items
+            - Highlight important information with <strong> or <em> tags
 
-            Body:
+            Note: Generate clean, semantic HTML without any inline styles or CSS. The frontend will apply all necessary styling.
 
-            Use the custom, thematic headings you designed in the analysis step.
-
-            Under each heading, use bullet points or short paragraphs to summarize the key points, discussions, and insights.
-
-            Paraphrase for clarity and conciseness. Avoid direct, verbose quotes unless they are critical.
-
-            Conclusion:
-
-            End with a distinct section for tangible outcomes. Use a clear heading like "Action Items" or "Key Decisions".
-
-            List each item clearly, assigning ownership if mentioned in the transcript (e.g., "AI-1: [Name/Role] to get tickets for the 5th test.").
-
-            Your final output should be a professional, easy-to-read document that feels custom-built for the specific conversation it represents.
-      """;
+            The meeting is conducted online at AEST
+      """ + startTime.toString();
 
 
 
