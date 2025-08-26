@@ -177,7 +177,7 @@ public class MeetingInstanceSyncService {
                         meetingEvent.setEndTime(endTimeUTC);
                         meetingEvent.setJoinUrl(event.onlineMeeting.joinUrl);
                         meetingEvent.setMeetingId(meetingId);               // Use real meetingID
-                        meetingEvent.setTranscriptStatus("none");
+                        meetingEvent.setTranscriptStatus(TranscriptStatus.NONE.name());
                         meetingEvent.setLastNotifiedAt(Instant.now());
 
                         // Save the meeting event
