@@ -39,7 +39,7 @@ PeakNote is a comprehensive meeting intelligence platform that integrates with M
                        │   (MySQL)       │
                        └─────────────────┘
 ```
-![Uploading Blank diagram.jpeg…]()
+![SystemDiagram](https://github.com/PeakNote/peaknote-backend/blob/develop/Blank%20diagram.jpeg)
 
 
 ### Technology Stack
